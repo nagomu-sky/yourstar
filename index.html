@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>365日の星 - あなたの誕生日に輝く星</title>
+<style>
+:root {
+  --bg: #050714; --card: rgba(20, 22, 50, 0.6);
+  --accent: #b3a5ff; --accent2: #f3d27a;
+  --text: #e8e8ff; --dim: #8a8caa;
+  --line: rgba(180, 180, 220, 0.15);
+  --spring: #a8d8a8; --summer: #f3d27a;
+  --autumn: #f3a87a; --winter: #a8c8f3;
+  --stone: #c4a8ff; --love: #ff9bbe;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 2rem 1rem; overflow-x: hidden; position: relative;
+}
+.stars-bg {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, #fff, transparent 50%),
+    radial-gradient(1px 1px at 80% 10%, #fff, transparent 50%),
+    radial-gradient(1.5px 1.5px at 50% 70%, #fff, transparent 50%),
+    radial-gradient(1px 1px at 90% 80%, #ffd, transparent 50%),
+    radial-gradient(1px 1px at 30% 90%, #fff, transparent 50%),
+    radial-gradient(1px 1px at 70% 50%, #ffd, transparent 50%),
+    radial-gradient(2px 2px at 10% 60%, #fff, transparent 50%);
+  background-size: 1200px 800px; animation: drift 200s linear infinite; opacity: 0.7;
+}
+@keyframes drift { 0% { transform: translate(0, 0); } 100% { transform: translate(-100px, -50px); } }
+.container { position: relative; z-index: 1; max-width: 620px; width: 100%; text-align: center; }
+h1 {
+  font-weight: 200; letter-spacing: 0.4em; font-size: 1.8rem; margin: 0 0 0.5rem;
+  background: linear-gradient(135deg, #fff 0%, #b3a5ff 50%, #f3d27a 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.subtitle { color: var(--dim); margin-bottom: 1.5rem; font-size: 0.9rem; letter-spacing: 0.1em; }
+.tabs { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 2rem; }
+.tab {
+  background: transparent; color: var(--dim); border: 1px solid var(--line);
+  padding: 0.6rem 1.5rem; border-radius: 30px; cursor: pointer; font-size: 0.85rem;
+  letter-spacing: 0.1em; font-family: inherit; transition: all 0.3s;
+}
+.tab.active { background: rgba(179, 165, 255, 0.15); color: var(--accent); border-color: var(--accent); }
+.input-group { display: flex; flex-direction: column; gap: 1rem; align-items: center; margin-bottom: 1.5rem; }
+.input-row { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+.input-block { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
+.input-label { color: var(--dim); font-size: 0.8rem; letter-spacing: 0.15em; }
+input[type="date"] {
+  background: rgba(20, 22, 50, 0.8); color: var(--text); border: 1px solid var(--line);
+  padding: 0.8rem 1.2rem; font-size: 1rem; border-radius: 12px; color-scheme: dark;
+  text-align: center; font-family: inherit; min-width: 180px;
+}
+input[type="date"]:focus { outline: none; border-color: var(--accent); }
+button.go {
+  background: linear-gradient(135deg, var(--accent) 0%, #7d6dd8 100%);
+  color: #0a0a1a; border: none; padding: 0.85rem 2.5rem; font-size: 0.95rem;
+  border-radius: 30px; cursor: pointer; letter-spacing: 0.2em; font-weight: 600;
+  transition: transform 0.2s, box-shadow 0.3s; font-family: inherit;
+}
+button.go:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(179, 165, 255, 0.4); }
+.result {
+  background: var(--card); backdrop-filter: blur(10px); border: 1px solid var(--line);
+  border-radius: 20px; padding: 2rem 1.5rem; margin-top: 1.5rem;
+  opacity: 0; transform: translateY(20px); transition: all 0.8s ease;
+}
+.result.show { opacity: 1; transform: translateY(0); }
+.result.spring { border-color: rgba(168, 216, 168, 0.3); }
+.result.summer { border-color: rgba(243, 210, 122, 0.3); }
+.result.autumn { border-color: rgba(243, 168, 122, 0.3); }
+.result.winter { border-color: rgba(168, 200, 243, 0.3); }
+.symbol { font-size: 2.2rem; color: var(--accent2); text-align: center; margin-bottom: 0.6rem; }
+.season-tag {
+  display: inline-block; padding: 0.2rem 0.8rem; border-radius: 20px;
+  font-size: 0.7rem; letter-spacing: 0.2em; margin-bottom: 0.8rem;
+}
+.season-tag.spring { background: rgba(168, 216, 168, 0.2); color: var(--spring); }
+.season-tag.summer { background: rgba(243, 210, 122, 0.2); color: var(--summer); }
+.season-tag.autumn { background: rgba(243, 168, 122, 0.2); color: var(--autumn); }
+.season-tag.winter { background: rgba(168, 200, 243, 0.2); color: var(--winter); }
+.center { text-align: center; }
+.date-display { color: var(--dim); font-size: 0.8rem; letter-spacing: 0.15em; margin-bottom: 1rem; }
+.star-name { font-size: 1.4rem; color: var(--accent2); margin-bottom: 0.2rem; letter-spacing: 0.05em; }
+.star-en { color: var(--dim); font-size: 0.8rem; margin-bottom: 0.3rem; font-style: italic; }
+.const { color: var(--dim); font-size: 0.8rem; letter-spacing: 0.15em; margin-bottom: 1.5rem; }
+.word { font-size: 1.3rem; font-weight: 300; color: white; line-height: 1.5; margin-bottom: 1rem; letter-spacing: 0.05em; }
+.msg { color: var(--text); line-height: 1.9; font-size: 0.92rem; padding: 1rem 0; white-space: pre-line; }
+.divider-line { height: 1px; background: var(--line); margin: 1rem 0; }
+.stone-section { padding-top: 0.5rem; }
+.stone-label {
+  display: inline-block; font-size: 0.7rem; letter-spacing: 0.3em; color: var(--stone);
+  background: rgba(196, 168, 255, 0.1); padding: 0.2rem 0.8rem; border-radius: 12px;
+  margin-bottom: 0.8rem;
+}
+.stone-name { font-size: 1.1rem; color: var(--stone); margin-bottom: 0.5rem; letter-spacing: 0.05em; }
+.stone-msg { color: var(--text); line-height: 1.7; font-size: 0.85rem; opacity: 0.9; }
+.compat-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; align-items: center; margin-bottom: 2rem; }
+.compat-mini { text-align: center; }
+.compat-mini .star-name { font-size: 1.1rem; }
+.compat-mini .const { font-size: 0.75rem; margin-bottom: 0.5rem; }
+.compat-mini .word { font-size: 0.9rem; margin-bottom: 0; }
+.compat-link { color: var(--love); font-size: 1.5rem; }
+.compat-score-section {
+  text-align: center; padding: 1.5rem 0;
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  margin-bottom: 1.5rem;
+}
+.compat-score {
+  font-size: 3rem; font-weight: 300; color: var(--love); letter-spacing: 0.05em;
+  margin-bottom: 0.3rem;
+}
+.compat-label {
+  font-size: 1.1rem; color: white; letter-spacing: 0.15em; margin-bottom: 0.5rem;
+}
+.compat-tag { display: inline-block; font-size: 0.7rem; color: var(--dim); letter-spacing: 0.2em; }
+.compat-msg { color: var(--text); line-height: 1.9; font-size: 0.95rem; padding: 0.5rem 0 1rem; white-space: pre-line; text-align: center; }
+.stones-pair { display: flex; justify-content: center; gap: 1rem; align-items: center; color: var(--stone); font-size: 0.95rem; margin: 1rem 0 0.5rem; }
+.stones-pair-msg { color: var(--text); font-size: 0.85rem; opacity: 0.9; line-height: 1.7; text-align: center; }
+.footer { color: var(--dim); font-size: 0.7rem; margin-top: 2.5rem; letter-spacing: 0.1em; }
+.share-btn { margin-top: 1.5rem; padding: 0.5rem 1.2rem; font-size: 0.85rem; background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 20px; cursor: pointer; font-family: inherit; }
+.share-btn:hover { background: var(--accent); color: var(--bg); }
+</style>
+</head>
+<body>
+<div class="stars-bg"></div>
+<div class="container">
+  <h1>3 6 5　日　の　星</h1>
+  <div class="subtitle">夜空が語る、あなたの星と、誰かとの相性</div>
+  <div class="tabs">
+    <button class="tab active" data-mode="single" onclick="setMode('single')">あなたの星</button>
+    <button class="tab" data-mode="compat" onclick="setMode('compat')">二人の相性</button>
+  </div>
+  <div class="input-group">
+    <div class="input-row" id="inputs"></div>
+    <button class="go" onclick="reveal()">星 を 呼 び 出 す</button>
+  </div>
+  <div id="result" class="result"></div>
+  <div class="footer">365 Days of Stars · Original star words & stone pairings</div>
+</div>
+
+<script>
+const STARS = [
+  {name:"アルフェラッツ",en:"Alpheratz",c:"アンドロメダ座",ra:0.13,season:"autumn",word:"王女の頭",msg:"二つの星座をまたぐ星。\n所属を一つに決めなくていい。",stone:"ブルーカルセドニー",stoneMsg:"穏やかな対話を呼ぶ青の石。"},
+  {name:"カフ",en:"Caph",c:"カシオペヤ座",ra:0.15,season:"autumn",word:"手のひらの星",msg:"カシオペヤのWの右端。\n誰かの手のひらの上にある幸運も、君が引き寄せたものだ。",stone:"ホワイトカルセドニー",stoneMsg:"受け取る力を高める石。"},
+  {name:"シェダル",en:"Schedar",c:"カシオペヤ座",ra:0.68,season:"autumn",word:"胸に宿る",msg:"王妃カシオペヤの胸。\n誇りは見せびらかすものじゃない。胸の奥で温めるもの。",stone:"カーネリアン",stoneMsg:"内側で燃え続ける誇りの石。"},
+  {name:"ディフダ",en:"Diphda",c:"くじら座",ra:0.73,season:"autumn",word:"鯨の尾",msg:"くじら座の尾の星。\n大きなものほど、ゆっくり動く。焦るな。",stone:"イエロージャスパー",stoneMsg:"地に足をつける、大地の石。"},
+  {name:"ミラク",en:"Mirach",c:"アンドロメダ座",ra:1.17,season:"autumn",word:"王女の腰",msg:"アンドロメダ姫の腰の星。\nしなやかさは、固さに勝つ。",stone:"ロードナイト",stoneMsg:"芯のあるしなやかさを宿す。"},
+  {name:"アケルナル",en:"Achernar",c:"エリダヌス座",ra:1.63,season:"winter",word:"川の終わり",msg:"長い川のいちばん遠くにある。\n終わりは、次の流れの始まりだ。",stone:"アクアマリン",stoneMsg:"流れを清める、水の石。"},
+  {name:"アルマク",en:"Almach",c:"アンドロメダ座",ra:2.07,season:"autumn",word:"金と青の物語",msg:"金色と青の二重星。\n対照的なものほど、組み合わせると美しい。",stone:"ブルートパーズ",stoneMsg:"対比を統合する青の宝石。"},
+  {name:"ハマル",en:"Hamal",c:"おひつじ座",ra:2.12,season:"autumn",word:"春の角",msg:"秋の空に昇る、来春の予感。\nやり直しは、いつでも始められる。",stone:"レッドカーネリアン",stoneMsg:"再生のエネルギーを宿す赤。"},
+  {name:"アルゴル",en:"Algol",c:"ペルセウス座",ra:3.13,season:"autumn",word:"変身する魔女",msg:"明るさが変わる「悪魔の星」。\n気分の波を恥じるな、それも君のリズムだ。",stone:"ヘマタイト",stoneMsg:"変化を守護する黒い石。"},
+  {name:"ミルファク",en:"Mirfak",c:"ペルセウス座",ra:3.4,season:"autumn",word:"英雄の肘",msg:"英雄ペルセウスの肘。\n振りかぶる前の、ためる時間を恐れるな。",stone:"ヘリオドール",stoneMsg:"準備を整える太陽の石。"},
+  {name:"アルデバラン",en:"Aldebaran",c:"おうし座",ra:4.6,season:"winter",word:"雄牛の眼",msg:"赤くまっすぐ見据える眼。\n逸らさないことが、勇気だ。",stone:"カーネリアン",stoneMsg:"視線を強くするオレンジ赤。"},
+  {name:"リゲル",en:"Rigel",c:"オリオン座",ra:5.23,season:"winter",word:"青の覇者",msg:"オリオンの足元で誰よりも青く燃える。\n派手じゃなくていい。深い色を持て。",stone:"カイヤナイト",stoneMsg:"深い青の覚悟の石。"},
+  {name:"カペラ",en:"Capella",c:"ぎょしゃ座",ra:5.28,season:"winter",word:"母なる御者",msg:"二つの太陽が回る冬の星。\n誰かを支える人にこそ、自分への光を。",stone:"シトリン",stoneMsg:"温かさを循環させる黄水晶。"},
+  {name:"ベラトリックス",en:"Bellatrix",c:"オリオン座",ra:5.42,season:"winter",word:"女戦士",msg:"オリオンの肩で青白く輝く。\n戦う相手は、外じゃなくて昨日の自分。",stone:"ブルームーンストーン",stoneMsg:"内なる戦士を覚ます石。"},
+  {name:"エルナト",en:"Elnath",c:"おうし座",ra:5.43,season:"winter",word:"突き上げる角",msg:"雄牛の角の先端。\nまっすぐ天を指せ。妥協は丸くしてしまう。",stone:"ターコイズ",stoneMsg:"突破するエネルギーの青。"},
+  {name:"ミンタカ",en:"Mintaka",c:"オリオン座",ra:5.53,season:"winter",word:"帯の頂",msg:"オリオンの帯の右端。\nスタートラインに立てているだけで、もう半分終わっている。",stone:"ブルーアベンチュリン",stoneMsg:"始まりを応援する青緑。"},
+  {name:"アルニラム",en:"Alnilam",c:"オリオン座",ra:5.6,season:"winter",word:"真珠の帯",msg:"オリオンの帯の中央。\n3つ並んだ星のひとつになれる、その安定感を信じよ。",stone:"ホワイトパール",stoneMsg:"中央に立つ調和の真珠。"},
+  {name:"アルニタク",en:"Alnitak",c:"オリオン座",ra:5.68,season:"winter",word:"帯留めの星",msg:"オリオンの帯の左端。\n誰かと並ぶことで、初めて見える形がある。",stone:"ラブラドライト",stoneMsg:"連帯の中で輝きを変える石。"},
+  {name:"サイフ",en:"Saiph",c:"オリオン座",ra:5.8,season:"winter",word:"剣",msg:"オリオンの右足、または剣の柄。\n抜かない剣にこそ、本当の威圧がある。",stone:"アイオライト",stoneMsg:"沈黙の威厳を宿す紫青。"},
+  {name:"ベテルギウス",en:"Betelgeuse",c:"オリオン座",ra:5.92,season:"winter",word:"燃える肩",msg:"いつ爆発するかわからない赤巨星。\n今この瞬間に、君の最大値で燃えろ。",stone:"ガーネット",stoneMsg:"今この瞬間を燃やす赤の石。"},
+  {name:"ミルザム",en:"Mirzam",c:"おおいぬ座",ra:6.38,season:"winter",word:"先導の声",msg:"シリウスより先に空に出る。\n自分から声を上げる役は、誰かの背中を押す。",stone:"ブルーフローライト",stoneMsg:"声に通り道をつくる青の石。"},
+  {name:"カノープス",en:"Canopus",c:"りゅうこつ座",ra:6.4,season:"winter",word:"南の極み",msg:"見上げる人の少ない、地平すれすれの星。\n人気より、確かさを選んでいい。",stone:"トパーズ",stoneMsg:"確かさを宿す金の石。"},
+  {name:"アルヘナ",en:"Alhena",c:"ふたご座",ra:6.63,season:"winter",word:"獅子の印",msg:"アラビア語で「印」。\n君が通った場所には、君だけの跡が残る。",stone:"クリアクオーツ",stoneMsg:"記憶を結晶化する透明の石。"},
+  {name:"シリウス",en:"Sirius",c:"おおいぬ座",ra:6.75,season:"winter",word:"永遠の輝き",msg:"夜空でいちばん明るい星。\n君の存在は、知らない誰かの夜を照らす。",stone:"ダイヤモンド",stoneMsg:"永遠を意味する究極の輝き。"},
+  {name:"アダーラ",en:"Adhara",c:"おおいぬ座",ra:6.98,season:"winter",word:"処女たち",msg:"アラビア語で「処女たち」。\n誰にも汚されない、自分の中の純度を守れ。",stone:"ホワイトムーンストーン",stoneMsg:"純度を守る月の石。"},
+  {name:"ウェゼン",en:"Wezen",c:"おおいぬ座",ra:7.15,season:"winter",word:"重さの星",msg:"アラビア語で「重さ」。\n軽やかな人の影には、必ず引き受けた重みがある。",stone:"イエローカルサイト",stoneMsg:"重みを温かく受け止める石。"},
+  {name:"カストル",en:"Castor",c:"ふたご座",ra:7.58,season:"winter",word:"馬を駆る兄",msg:"双子の兄、馬術の達人。\n技は、地味な反復からしか生まれない。",stone:"ホワイトオパール",stoneMsg:"反復が宿す虹色の石。"},
+  {name:"プロキオン",en:"Procyon",c:"こいぬ座",ra:7.65,season:"winter",word:"先駆ける者",msg:"シリウスより先に昇る。\n速さじゃない、タイミングを掴む者が勝つ。",stone:"アンバー",stoneMsg:"時を閉じ込めた琥珀色。"},
+  {name:"ポルックス",en:"Pollux",c:"ふたご座",ra:7.75,season:"winter",word:"不死の双子",msg:"兄弟のために不死を半分譲った神話の星。\n本当に強い人は、誰かのために力を使える。",stone:"サンストーン",stoneMsg:"分け与える光を宿す石。"},
+  {name:"ナオス",en:"Naos",c:"とも座",ra:8.07,season:"winter",word:"船尾の灯",msg:"アルゴ船の船尾を照らす。\n後方にも光を残す人は、後輩から愛される。",stone:"ブルーフローライト",stoneMsg:"後方を照らす慈悲の青。"},
+  {name:"レゴル",en:"Regor",c:"ほ座",ra:8.17,season:"spring",word:"帆の使者",msg:"風を受ける帆の星。\n自分でコントロールできない風を、味方に変える知恵を持て。",stone:"ホワイトハウライト",stoneMsg:"風を受け流す穏やかな石。"},
+  {name:"スハイル",en:"Suhail",c:"ほ座",ra:9.13,season:"spring",word:"英雄譚",msg:"アラブの英雄スハイルから。\n誰かの物語の中で生きるより、自分の物語を書け。",stone:"カーネリアン",stoneMsg:"自分の物語を駆動する赤。"},
+  {name:"アルファルド",en:"Alphard",c:"うみへび座",ra:9.47,season:"spring",word:"孤独な誇り",msg:"うみへび座にぽつんと光る。\n群れない強さは、弱さじゃない。",stone:"オレンジカーネリアン",stoneMsg:"単独で立つ温かい誇りの石。"},
+  {name:"レグルス",en:"Regulus",c:"しし座",ra:10.13,season:"spring",word:"王の心臓",msg:"獅子の胸で鼓動する春の星。\nリーダーの資質は、恐れずに胸を張ること。",stone:"アクアマリン",stoneMsg:"王の判断を曇らせない青。"},
+  {name:"アルギエバ",en:"Algieba",c:"しし座",ra:10.33,season:"spring",word:"たてがみ",msg:"獅子のたてがみで輝く二重星。\n見せ場を持っていることは、ずるいことじゃない。",stone:"シトリン",stoneMsg:"陽光のたてがみの石。"},
+  {name:"ドゥベ",en:"Dubhe",c:"おおぐま座",ra:11.07,season:"spring",word:"北を指す",msg:"北斗七星の先頭、北極星を見つける目印。\n君も、誰かが方角を見失った時の指標になれる。",stone:"サンストーン",stoneMsg:"方角を示す太陽の石。"},
+  {name:"デネボラ",en:"Denebola",c:"しし座",ra:11.82,season:"spring",word:"獅子の尾",msg:"獅子座のしっぽ。\n後ろ姿でも品が出る人は本物。",stone:"ホワイトクリスタル",stoneMsg:"清らかな後ろ姿の石。"},
+  {name:"アクルックス",en:"Acrux",c:"みなみじゅうじ座",ra:12.45,season:"spring",word:"南の十字",msg:"南半球の航海者の道しるべ。\n誰かの方角になれる人になれ。",stone:"ブルーカルセドニー",stoneMsg:"航海者を導く青の石。"},
+  {name:"ガクルックス",en:"Gacrux",c:"みなみじゅうじ座",ra:12.52,season:"spring",word:"紅葉の十字",msg:"南十字に赤く灯る星。\n季節は変わる。今の景色を、覚えておけ。",stone:"ロードクロサイト",stoneMsg:"今を刻むピンクの石。"},
+  {name:"ミモザ",en:"Mimosa",c:"みなみじゅうじ座",ra:12.8,season:"spring",word:"紅の十字",msg:"南十字星のなかで青く輝く。\n似たもの同士の中でも、自分の色を残せ。",stone:"ブルートパーズ",stoneMsg:"個性を残す青い石。"},
+  {name:"アリオト",en:"Alioth",c:"おおぐま座",ra:12.9,season:"spring",word:"母熊の背",msg:"北斗七星の柄の付け根。\n中心ではなく、支える側になる強さもある。",stone:"イエロージェード",stoneMsg:"支える者の温かい黄。"},
+  {name:"ミザル",en:"Mizar",c:"おおぐま座",ra:13.4,season:"spring",word:"双子のひとつ",msg:"アルコルとペアの星。\n見えないけれど隣にいる人を、たまに思い出せ。",stone:"セレナイト",stoneMsg:"見えない隣人をつなぐ石。"},
+  {name:"スピカ",en:"Spica",c:"おとめ座",ra:13.42,season:"spring",word:"麦の穂",msg:"豊穣の星。\n蒔いた種は、見えないところで根を張っている。",stone:"パール",stoneMsg:"穀物のような調和の真珠。"},
+  {name:"ハダル",en:"Hadar",c:"ケンタウルス座",ra:14.07,season:"spring",word:"半身の戦士",msg:"半人半馬の体を持つ。\n矛盾を抱えたままで、それでも進める。",stone:"ラピスラズリ",stoneMsg:"矛盾を統合する深青。"},
+  {name:"メンケント",en:"Menkent",c:"ケンタウルス座",ra:14.1,season:"spring",word:"半人の肩",msg:"人と馬の境目で輝く。\n二つの世界を行き来できる人は、貴重だ。",stone:"スモーキークオーツ",stoneMsg:"境界を越える煙水晶。"},
+  {name:"アルクトゥルス",en:"Arcturus",c:"うしかい座",ra:14.27,season:"spring",word:"流転の旅人",msg:"ひとところに留まらない春の星。\n変わり続けるのは、強さだ。",stone:"タイガーアイ",stoneMsg:"流転を見据える虎の眼。"},
+  {name:"アルフェッカ",en:"Alphecca",c:"かんむり座",ra:15.58,season:"summer",word:"冠の宝石",msg:"半円の冠の中央で輝く。\n中心にいる時こそ、頭を低く保て。",stone:"クリアクオーツ",stoneMsg:"冠の中心の純粋な石。"},
+  {name:"アンタレス",en:"Antares",c:"さそり座",ra:16.48,season:"summer",word:"燃える心臓",msg:"火星のライバルと呼ばれる赤。\n冷静より、熱さを選ぶ日があってもいい。",stone:"ルビー",stoneMsg:"心臓そのものの赤。"},
+  {name:"アトリア",en:"Atria",c:"みなみのさんかく座",ra:16.82,season:"summer",word:"静かな三角",msg:"南天の小さな三角形のひとつ。\n小さくても、形を成すものには美しさが宿る。",stone:"ガーネット",stoneMsg:"小さくても深い赤の石。"},
+  {name:"シャウラ",en:"Shaula",c:"さそり座",ra:17.57,season:"summer",word:"毒の尾針",msg:"さそりの尾の先。\n誰かを傷つける力を、自分を守るために使え。",stone:"ブルーアパタイト",stoneMsg:"鋭さを内に秘める青。"},
+  {name:"ラスアルハゲ",en:"Rasalhague",c:"へびつかい座",ra:17.58,season:"summer",word:"蛇遣いの首",msg:"蛇を持つ医神アスクレピオスの頭。\n毒も、扱い方次第で薬になる。",stone:"クリアクオーツ",stoneMsg:"毒を変換する透明の石。"},
+  {name:"サルガス",en:"Sargas",c:"さそり座",ra:17.62,season:"summer",word:"弓を引く",msg:"さそりの尾、力をためる場所。\n出さない強さの方が、出す強さより難しい。",stone:"イエロートルマリン",stoneMsg:"内圧を蓄える金の石。"},
+  {name:"カウス・アウストラリス",en:"Kaus Australis",c:"いて座",ra:18.4,season:"summer",word:"南の弓",msg:"射手座の弓の下端。\n射る前に、引く時間がいちばん大事。",stone:"アズライト",stoneMsg:"集中を高める深青の石。"},
+  {name:"ベガ",en:"Vega",c:"こと座",ra:18.62,season:"summer",word:"織り続ける手",msg:"七夕の織姫。\n途中で投げ出さずに紡げ、その糸はやがて空を渡る。",stone:"サファイア",stoneMsg:"織りなす運命の青。"},
+  {name:"ヌンキ",en:"Nunki",c:"いて座",ra:18.92,season:"summer",word:"力の星",msg:"いて座の手の中の星。\n蓄えてきたものを、出すべき時に出せるか。",stone:"ラピスラズリ",stoneMsg:"蓄えた力を象徴する深青。"},
+  {name:"アルタイル",en:"Altair",c:"わし座",ra:19.85,season:"summer",word:"翔ける鷲",msg:"夏の大三角の一角。\n細部より、構図を見よ。",stone:"クリアクオーツ",stoneMsg:"高く澄んだ視野の石。"},
+  {name:"ピーコック",en:"Peacock",c:"くじゃく座",ra:20.43,season:"autumn",word:"千の眼",msg:"孔雀の羽の星。\n見られている前提で動けるのは、覚悟だ。",stone:"ラブラドライト",stoneMsg:"千の眼を持つ虹色の石。"},
+  {name:"デネブ",en:"Deneb",c:"はくちょう座",ra:20.7,season:"summer",word:"夏の尾翼",msg:"はるか1500光年からの光。\n君の声は、思っているより遠くまで届く。",stone:"ホワイトクオーツ",stoneMsg:"遠くへ届く澄んだ声の石。"},
+  {name:"アルナイル",en:"Alnair",c:"つる座",ra:22.13,season:"autumn",word:"翔ぶ翼",msg:"南の鶴座の翼の先。\n飛ぶには、まず重さを捨てる勇気が要る。",stone:"スギライト",stoneMsg:"執着を手放す紫の石。"},
+  {name:"フォーマルハウト",en:"Fomalhaut",c:"みなみのうお座",ra:22.97,season:"autumn",word:"孤独の魚",msg:"周りに大きな星がない、ぽつんと光る一等星。\n群れずに輝けるのは才能だ。",stone:"ムーンストーン",stoneMsg:"孤独を美に変える月の石。"}
+];
+
+const SEASON_LABEL = { spring: '春', summer: '夏', autumn: '秋', winter: '冬' };
+
+let mode = 'single';
+
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.mode === m));
+  renderInputs();
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('result').innerHTML = '';
+}
+
+function renderInputs() {
+  const inputs = document.getElementById('inputs');
+  if (mode === 'single') {
+    inputs.innerHTML = '<div class="input-block"><div class="input-label">あなたの誕生日</div><input type="date" id="bday1" /></div>';
+  } else {
+    inputs.innerHTML =
+      '<div class="input-block"><div class="input-label">あなた</div><input type="date" id="bday1" /></div>' +
+      '<div class="input-block"><div class="input-label">相手</div><input type="date" id="bday2" /></div>';
+  }
+}
+
+function dayOfYear(date) {
+  const start = new Date(date.getFullYear(), 0, 0);
+  return Math.floor((date - start) / 86400000);
+}
+
+function eveningZenithRA(d) {
+  let sunRA = ((d - 80 + 365) % 365) / 365 * 24;
+  return (sunRA + 9 + 24) % 24;
+}
+
+function angularDist(ra1, ra2) {
+  let diff = Math.abs(ra1 - ra2);
+  return Math.min(diff, 24 - diff);
+}
+
+function findStarForDate(date) {
+  const day = dayOfYear(date);
+  const targetRA = eveningZenithRA(day);
+  let closest = null;
+  let minDist = Infinity;
+  for (const s of STARS) {
+    const d = angularDist(s.ra, targetRA);
+    if (d < minDist) { minDist = d; closest = s; }
+  }
+  return closest;
+}
+
+function formatDate(d) {
+  return d.getFullYear() + "年 " + (d.getMonth()+1) + "月 " + d.getDate() + "日";
+}
+
+function calcCompat(s1, s2) {
+  // 赤経の角度差(0-12h)から相性ラベル＆スコア
+  const dist = angularDist(s1.ra, s2.ra);
+  let score, label, type, msg;
+  if (s1.name === s2.name) {
+    score = 99; label = "鏡映し"; type = "mirror";
+    msg = "同じ星に守られた二人。\nあまりに似ていて、たまにぶつかる。\n似てるからこそ、お互いを赦せる関係。";
+  } else if (dist < 1) {
+    score = 92; label = "共鳴"; type = "echo";
+    msg = "ほぼ同じ位置に瞬く星同士。\n言葉にしなくても伝わる、空気のような存在。\n慣れすぎず、たまに見つめ直すのを忘れずに。";
+  } else if (dist < 3) {
+    score = 85; label = "並走"; type = "parallel";
+    msg = "近しい場所を一緒に巡る星。\n同じ景色を共有できる、楽な関係。\nお互いの違いも大事に育てて。";
+  } else if (dist < 5) {
+    score = 88; label = "親和"; type = "trine";
+    msg = "占星術で「トライン」と呼ばれる好相性。\n自然と引き合う、流れの良い関係。\n努力なしで進めるからこそ、感謝を忘れずに。";
+  } else if (dist < 7) {
+    score = 70; label = "緊張"; type = "square";
+    msg = "占星術の「スクエア」、刺激の関係。\nぶつかりやすいが、突破口も多い。\n衝突を避けず、議論できれば最強のペア。";
+  } else if (dist < 9) {
+    score = 86; label = "補完"; type = "trine2";
+    msg = "離れているのに、なぜか合う。\n持っているものが違うから、互いを満たせる。\n相手の領域に踏み込みすぎないこと。";
+  } else if (dist < 11) {
+    score = 78; label = "引力"; type = "attraction";
+    msg = "夜空の反対側で輝く、二人。\n惹かれるけど、距離を感じる。\n会えない時間こそ、関係を育てている。";
+  } else {
+    score = 90; label = "対極の引力"; type = "opposition";
+    msg = "占星術の「オポジション」、対極の星。\n反発するから、強く惹かれる。\n上手くいけば最高、こじれれば最大の戦争。\n相手は「自分にないもの」の鏡。";
+  }
+  // 季節ボーナス・星座ボーナス
+  if (s1.c === s2.c) { score = Math.min(99, score + 5); }
+  else if (s1.season === s2.season) { score = Math.min(99, score + 2); }
+  return { score: score, label: label, type: type, msg: msg, dist: dist };
+}
+
+function reveal() {
+  const result = document.getElementById('result');
+  const v1 = document.getElementById('bday1').value;
+  if (!v1) { alert('誕生日を選んでください'); return; }
+  result.classList.remove('show', 'spring', 'summer', 'autumn', 'winter');
+
+  if (mode === 'single') {
+    const d = new Date(v1);
+    const s = findStarForDate(d);
+    setTimeout(() => {
+      result.classList.add(s.season);
+      result.innerHTML =
+        '<div class="symbol">✦</div>' +
+        '<div class="center"><span class="season-tag ' + s.season + '">' + SEASON_LABEL[s.season] + 'の星</span></div>' +
+        '<div class="date-display center">' + formatDate(d) + '</div>' +
+        '<div class="star-name center">' + s.name + '</div>' +
+        '<div class="star-en center">' + s.en + '</div>' +
+        '<div class="const center">' + s.c + '</div>' +
+        '<div class="word center">「' + s.word + '」</div>' +
+        '<div class="msg">' + s.msg + '</div>' +
+        '<div class="divider-line"></div>' +
+        '<div class="stone-section center">' +
+          '<div class="stone-label">お守り石</div>' +
+          '<div class="stone-name">◇ ' + s.stone + '</div>' +
+          '<div class="stone-msg">' + s.stoneMsg + '</div>' +
+        '</div>' +
+        '<div class="center"><button class="share-btn" onclick="shareS(\'' + s.name + '\', \'' + s.word + '\', \'' + s.stone + '\')">この星をシェア</button></div>';
+      setTimeout(() => result.classList.add('show'), 50);
+    }, 200);
+  } else {
+    const v2 = document.getElementById('bday2').value;
+    if (!v2) { alert('相手の誕生日も選んでください'); return; }
+    const d1 = new Date(v1);
+    const d2 = new Date(v2);
+    const s1 = findStarForDate(d1);
+    const s2 = findStarForDate(d2);
+    const compat = calcCompat(s1, s2);
+    setTimeout(() => {
+      result.innerHTML =
+        '<div class="symbol">✦  ✦</div>' +
+        '<div class="compat-row">' +
+          '<div class="compat-mini">' +
+            '<div class="date-display">' + formatDate(d1) + '</div>' +
+            '<div class="star-name">' + s1.name + '</div>' +
+            '<div class="const">' + s1.c + '</div>' +
+            '<div class="word">「' + s1.word + '」</div>' +
+          '</div>' +
+          '<div class="compat-link">⇆</div>' +
+          '<div class="compat-mini">' +
+            '<div class="date-display">' + formatDate(d2) + '</div>' +
+            '<div class="star-name">' + s2.name + '</div>' +
+            '<div class="const">' + s2.c + '</div>' +
+            '<div class="word">「' + s2.word + '」</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="compat-score-section">' +
+          '<div class="compat-score">' + compat.score + '</div>' +
+          '<div class="compat-label">「' + compat.label + '」</div>' +
+          '<div class="compat-tag">RA差 ' + compat.dist.toFixed(1) + 'h</div>' +
+        '</div>' +
+        '<div class="compat-msg">' + compat.msg + '</div>' +
+        '<div class="divider-line"></div>' +
+        '<div class="stone-section center">' +
+          '<div class="stone-label">二人のお守り石</div>' +
+          '<div class="stones-pair">◇ ' + s1.stone + '　×　' + s2.stone + ' ◇</div>' +
+          '<div class="stones-pair-msg">' + s1.stoneMsg + '\n' + s2.stoneMsg + '</div>' +
+        '</div>' +
+        '<div class="center"><button class="share-btn" onclick="shareC(\'' + s1.name + '\', \'' + s2.name + '\', ' + compat.score + ', \'' + compat.label + '\')">相性をシェア</button></div>';
+      setTimeout(() => result.classList.add('show'), 50);
+    }, 200);
+  }
+}
+
+function shareS(name, word, stone) {
+  const text = "私の星は「" + name + "」── " + word + " / お守り石: " + stone;
+  const t = encodeURIComponent(text);
+  window.open("https://twitter.com/intent/tweet?text=" + t, "_blank");
+}
+function shareC(n1, n2, score, label) {
+  const text = n1 + " × " + n2 + " の相性: " + score + "「" + label + "」 #365日の星";
+  const t = encodeURIComponent(text);
+  window.open("https://twitter.com/intent/tweet?text=" + t, "_blank");
+}
+
+renderInputs();
+</script>
+</body>
+</html>
