@@ -155,8 +155,14 @@ function getDirection(dec) {
 }
 
 function dayOfYear(date) {
-  const start = new Date(date.getFullYear(), 0, 0);
-  return Math.floor((date - start) / 86400000);
+  // Calendar is built on leap-year basis (366 entries). Always use leap-year month days
+  // so May 7 always maps to day 128, regardless of whether the year is leap or not.
+  const m = date.getMonth();
+  const d = date.getDate();
+  const monthDays = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  let total = d;
+  for (let i = 0; i < m; i++) total += monthDays[i];
+  return total;
 }
 
 function findStarForDate(date) {
