@@ -169,6 +169,30 @@ button.go:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(179, 
 .compat-kabbalah { text-align: center; margin-top: 0.4rem; padding-bottom: 0.3rem; line-height: 1.7; }
 .compat-kabbalah-keyword { font-size: 0.85rem; letter-spacing: 0.2em; font-weight: 500; }
 .compat-kabbalah-desc { color: var(--text); font-size: 0.78rem; letter-spacing: 0.08em; opacity: 0.9; margin-top: 0.3rem; line-height: 1.7; }
+
+.fortune-btn { background: linear-gradient(135deg, var(--accent2) 0%, #d8a06d 100%); color: #0a0a1a; border: none; padding: 0.8rem 2.5rem; font-size: 0.95rem; border-radius: 30px; cursor: pointer; letter-spacing: 0.25em; font-weight: 600; font-family: inherit; margin: 0.4rem auto 1.5rem; display: block; transition: transform 0.2s, box-shadow 0.3s; }
+.fortune-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(243, 210, 122, 0.4); }
+.fortune-modal-bg { position: fixed; inset: 0; background: rgba(5, 7, 20, 0.85); backdrop-filter: blur(8px); z-index: 100; display: none; align-items: flex-start; justify-content: center; padding: 2rem 1rem; overflow-y: auto; }
+.fortune-modal-bg.show { display: flex; }
+.fortune-modal { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 2rem 1.5rem; max-width: 540px; width: 100%; position: relative; backdrop-filter: blur(10px); }
+.fortune-modal .close-x { position: absolute; top: 1rem; right: 1rem; background: rgba(20, 22, 50, 0.8); color: var(--dim); border: 1px solid var(--line); border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 1.2rem; font-family: inherit; display: flex; align-items: center; justify-content: center; line-height: 1; }
+.fortune-rank { display: inline-block; padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.85rem; letter-spacing: 0.2em; font-weight: 600; margin-bottom: 0.8rem; }
+.fortune-rank.daikichi { background: rgba(243, 210, 122, 0.25); color: #f3d27a; border: 1px solid rgba(243, 210, 122, 0.5); }
+.fortune-rank.chukichi { background: rgba(179, 165, 255, 0.2); color: var(--accent); border: 1px solid rgba(179, 165, 255, 0.4); }
+.fortune-rank.kichi { background: rgba(168, 216, 168, 0.2); color: var(--spring); border: 1px solid rgba(168, 216, 168, 0.4); }
+.fortune-rank.shokichi { background: rgba(168, 200, 243, 0.2); color: var(--winter); border: 1px solid rgba(168, 200, 243, 0.4); }
+.fortune-rank.suekichi { background: rgba(122, 211, 232, 0.2); color: var(--observe); border: 1px solid rgba(122, 211, 232, 0.4); }
+.fortune-rank.kyo { background: rgba(180, 180, 220, 0.15); color: var(--dim); border: 1px solid rgba(180, 180, 220, 0.3); }
+.fortune-rank.daikyo { background: rgba(120, 100, 140, 0.2); color: #b09cc8; border: 1px solid rgba(180, 150, 200, 0.3); }
+.fortune-date { color: var(--dim); font-size: 0.75rem; letter-spacing: 0.2em; margin-bottom: 1rem; }
+.fortune-name { font-size: 1.4rem; color: var(--accent2); letter-spacing: 0.1em; margin-bottom: 0.4rem; }
+.fortune-word { font-size: 1.2rem; color: white; font-weight: 300; letter-spacing: 0.05em; margin-bottom: 1.2rem; }
+.fortune-body { color: var(--text); line-height: 1.9; font-size: 0.92rem; margin-bottom: 1rem; }
+.fortune-note { color: var(--dim); font-size: 0.85rem; line-height: 1.8; padding: 0.8rem 1rem; border-left: 2px solid var(--line); margin-bottom: 1rem; }
+.fortune-action { background: rgba(243, 210, 122, 0.08); border: 1px solid rgba(243, 210, 122, 0.3); border-radius: 12px; padding: 1rem; }
+.fortune-action-label { font-size: 0.7rem; letter-spacing: 0.25em; color: var(--accent2); margin-bottom: 0.4rem; }
+.fortune-action-text { color: white; font-size: 0.9rem; line-height: 1.7; }
+
 </style>
 </head>
 <body>
@@ -186,12 +210,19 @@ button.go:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(179, 
       <button class="tab active" data-mode="single" onclick="setMode('single')">あなたの星</button>
       <button class="tab" data-mode="compat" onclick="setMode('compat')">二人の相性</button>
     </div>
+    <button class="fortune-btn" onclick="showFortune()">今 日 の 運 勢</button>
     <div id="intro-card" class="intro-card">
       <div class="intro-text">
         あなたが生まれた日、夜空には光があった。<br>
         誰がそれを、何と呼んできたか──<br>
         <span class="intro-accent">世界の言葉で、知ることができる。</span>
       </div>
+    </div>
+  </div>
+  <div id="fortune-bg" class="fortune-modal-bg" onclick="if(event.target===this)closeFortune()">
+    <div class="fortune-modal">
+      <button class="close-x" onclick="closeFortune()">✕</button>
+      <div id="fortune-content"></div>
     </div>
   </div>
   <div id="result" class="result"></div>
@@ -436,7 +467,8 @@ let mode = 'single';
 function setMode(m) {
   mode = m;
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.mode === m));
-  renderInputs();
+  
+renderInputs();
   document.getElementById('result').classList.remove('show');
   document.getElementById('result').innerHTML = '';
 }
@@ -619,6 +651,46 @@ function shareS(name, word, stone) {
 }
 
 renderInputs();
+
+const FORTUNE_43 = [{"n": "太陽", "w": "灯すもの", "r": "大吉", "body": "今日は中心に立つ日。あなたの存在そのものが、周りに光を届ける一日。", "note": "気をつけたいのは、強さで誰かを眩ませないこと。", "act": "朝、一度だけ太陽の光を浴びる。窓を開けるだけでOK。"}, {"n": "月", "w": "移ろう光", "r": "中吉", "body": "今日は流れに身を任せる日。決めつけずに、変わっていくものを面白がる一日。気分が揺れても焦らない。", "note": "気をつけたいのは、自分を「定まっていない」と責めないこと。", "act": "夜、月を見上げる。"}, {"n": "火星", "w": "赤き決意", "r": "吉", "body": "今日は動く日。胸の中で温まっていたものを、ひとつ形にできる一日。最初の一歩を踏み出して。", "note": "気をつけたいのは、勢いに任せて言葉を尖らせないこと。", "act": "先延ばしにしていたことに、5分だけ手をつける。"}, {"n": "木星", "w": "大いなる守り", "r": "大吉", "body": "今日は守られている日。困ったときに誰かが手を貸してくれる、見えない後ろ盾が動く。素直に甘えていい。", "note": "気をつけたいのは、何でもひとりで抱え込むこと。", "act": "「ありがとう」を一回多めに口にする。"}, {"n": "土星", "w": "時の環", "r": "吉", "body": "今日は積み重ねる日。地味だが続けることに意味がある一日。コツコツ進めれば、思っているより遠くまで来ている。", "note": "気をつけたいのは、結果を急がないこと。", "act": "習慣にしていることを、いつもより5分だけ長くやる。"}, {"n": "金星", "w": "美しき訪れ", "r": "大吉", "body": "今日は愛と美の日。心が動く出会いや、ふとした美しさに気づける一日。誰かと笑い合えるチャンスが多い。", "note": "気をつけたいのは、見栄えに振り回されすぎないこと。", "act": "好きな花、好きな色、好きな香りに触れる。"}, {"n": "水星", "w": "機敏な知らせ", "r": "吉", "body": "今日は連絡の日。情報や知らせが届く、または届ける。動きの早い一日。", "note": "気をつけたいのは、忙しさに紛れて雑に返事しないこと。", "act": "保留にしていたメッセージにひとつ返事を出す。"}, {"n": "地球", "w": "足下の青", "r": "中吉", "body": "今日は基本に戻る日。遠くを目指す前に、足元の暮らしを整える。当たり前のことが心地よく感じられる。", "note": "気をつけたいのは、退屈と感じすぎないこと。", "act": "家のひとつだけ片付ける。"}, {"n": "天王星", "w": "型を破る風", "r": "小吉", "body": "今日はいつもと違う選択が吉。同じ道、同じ時間、同じ店を変えてみる。思いがけない発見が来る日。", "note": "気をつけたいのは、変えすぎて疲れること。", "act": "通勤・買い物・散歩のルートをひとつ変える。"}, {"n": "海王星", "w": "青の深み", "r": "中吉", "body": "今日は内側を見つめる日。夢や直感、なんとなく感じることが大事になる一日。論理より感覚で動いていい。", "note": "気をつけたいのは、思い込みに沈み込みすぎないこと。", "act": "夜、見た夢をメモする。"}, {"n": "冥王星", "w": "変容を経たもの", "r": "末吉", "body": "今日は脱皮の日。古い自分や役回りが脱げて、新しいかたちが少し見えてくる。降格や終わりに見えたものが、実は始まり。", "note": "気をつけたいのは、過去の自分に固執しないこと。", "act": "使わなくなったものをひとつ手放す。"}, {"n": "ハレー彗星", "w": "巡り戻る約束", "r": "大吉", "body": "今日は再会の日。遠ざかっていた人、忘れていた思い、過去のテーマが、ふと帰ってくる。形を変えて戻ってくる。", "note": "気をつけたいのは、昔のままを期待しすぎないこと。", "act": "しばらく連絡していない人に、一言だけ送る。"}, {"n": "アンドロメダ銀河", "w": "隣に広がる無限", "r": "中吉", "body": "今日は視野を広げる日。すぐそばに、まだ気づいていない大きな可能性がある。狭く考えていたことが「もっとある」と思える。", "note": "気をつけたいのは、大きさに圧倒されないこと。", "act": "行ったことのない場所か、知らない分野の本を5分眺める。"}, {"n": "天の川銀河", "w": "我らの河", "r": "吉", "body": "今日は仲間と歩む日。自分はひとりでなく、大きな流れの中にいると感じられる一日。所属することの温かさが心に届く。", "note": "気をつけたいのは、流されているだけにならないこと。", "act": "「自分はこのチーム／家族の一員だ」と一度思い出す。"}, {"n": "大マゼラン雲", "w": "南に寄り添う伴", "r": "中吉", "body": "今日は隣にいる人の日。すぐそばで支えてくれている人の存在に気づく。当たり前すぎて見過ごしていた人が今日のキー。", "note": "気をつけたいのは、近すぎて雑にしないこと。", "act": "いつも近くにいる人に、ひと言お礼を伝える。"}, {"n": "小マゼラン雲", "w": "小さき伴のきらめき", "r": "小吉", "body": "今日は小さなものに目を向ける日。子ども、ペット、手のひらに乗るもの、地味な持ち物が今日の主役。", "note": "気をつけたいのは、大きいものばかり追いかけないこと。", "act": "いつもより小さい単位を大切にする。"}, {"n": "オリオン大星雲", "w": "星のゆりかご", "r": "大吉", "body": "今日は新しいものが生まれる日。アイデアや計画、関係性の最初の種が今日まかれる。すぐに結果は出なくても始めることに意味がある。", "note": "気をつけたいのは、まだ未熟だからと出し惜しまないこと。", "act": "頭にあるアイデアをひとつ言葉にして書き出す。"}, {"n": "馬頭星雲", "w": "影が形をなす", "r": "末吉", "body": "今日はモヤモヤがかたちになる日。なんとなく感じていた違和感が「これだ」と輪郭を持つ。怖くて避けてきたものに名前がつく。", "note": "気をつけたいのは、見えた瞬間に動こうとしすぎないこと。", "act": "気になっていることを、一言で言ってみる。"}, {"n": "蟹星雲", "w": "残された光の輪", "r": "末吉", "body": "今日は終わったあとに光が残る日。過去の出来事が、今になって意味を見せる。痛みも経験も、今日のあなたを支える光。", "note": "気をつけたいのは、過去を否定しすぎないこと。", "act": "昔の写真か日記をひとつ眺める。"}, {"n": "イオ", "w": "絶えず燃える者", "r": "吉", "body": "今日は情熱が湧く日。やる気が体の中から噴き出す、止められない一日。エネルギーが余るくらい出てくる。", "note": "気をつけたいのは、燃やしすぎて夜に枯れないこと。", "act": "本気でやりたいことに30分だけ集中する。"}, {"n": "エウロパ", "w": "氷下の海", "r": "中吉", "body": "今日は秘めたものが動く日。表面は静かでも、内側で大事なことが進んでいる。今は奥で育てるとき。", "note": "気をつけたいのは、見えないからと焦らないこと。", "act": "心にしまっている願いを、一度紙に書く。"}, {"n": "ガニメデ", "w": "最大の伴", "r": "大吉", "body": "今日は誰かが大きく支えてくれる日。あなた一人では届かなかったことを、横にいる存在が後押ししてくれる。", "note": "気をつけたいのは、頼りすぎて任せきりにならないこと。", "act": "誰かに「手を貸して」と言ってみる。"}, {"n": "カリスト", "w": "刻まれた歴史", "r": "小吉", "body": "今日は過去の経験が活きる日。前にぶつかった壁、失敗、傷が、今日のあなたを助ける道具になる。古傷も無駄ではなかった。", "note": "気をつけたいのは、過去に縛られないこと。", "act": "以前うまくいかなかったことに、もう一度だけトライしてみる。"}, {"n": "タイタン", "w": "霧のかなた", "r": "末吉", "body": "今日は見通しが効かない日。先が読めない、答えが出ない、もやがかかった一日。それでも一歩は進める。", "note": "気をつけたいのは、見えないことを「悪い兆し」と決めつけないこと。", "act": "今日決められないことは、今日決めなくていい、と自分に許可する。"}, {"n": "エンケラドゥス", "w": "氷から噴く命", "r": "大吉", "body": "今日は厳しい場所から芽が出る日。きついと思っていた状況の中に、思いがけない可能性が顔を出す。寒い場所ほど温もりが沁みる。", "note": "気をつけたいのは、簡単な道だけ探さないこと。", "act": "苦手なものにあえて一度触れてみる。"}, {"n": "環状星雲", "w": "閉じた輪の中", "r": "小吉", "body": "今日はひと巡りが終わる日。長く続けてきたサイクルが、今日でちょうど一周。次の輪が始まる前の、静かな間。", "note": "気をつけたいのは、次へ急ぎすぎないこと。", "act": "今日は新しい予定を入れず、ひと息つく時間を作る。"}, {"n": "創造の柱", "w": "育む柱", "r": "大吉", "body": "今日は何かが育つ日。あなたが世話してきたものが、ぐっと伸びる。手間をかけてきた人ほど、報われを感じる。", "note": "気をつけたいのは、焦って完成させないこと。", "act": "今やっている長い仕事に、ひと工夫加える。"}, {"n": "ばら星雲", "w": "咲き続ける光", "r": "大吉", "body": "今日は美しさが続く日。一度きりではない、ずっと咲き続けるような喜びが訪れる。日常の中の小さな美に気づく目が冴える。", "note": "気をつけたいのは、見ているばかりで動かないこと。", "act": "身の回りに花を一輪、または絵をひとつ飾る。"}, {"n": "干潟星雲", "w": "果ての潟", "r": "吉", "body": "今日は遠くを思い出す日。ふと、遠い場所や昔の景色が心に浮かぶ。旅心が動く、または懐かしさが訪れる一日。", "note": "気をつけたいのは、現実から逃げる手段にしないこと。", "act": "地図を眺める、または昔住んだ場所をストリートビューで歩く。"}, {"n": "三裂星雲", "w": "分かたれて光る", "r": "凶", "body": "今日はバラバラに見える日。あれもこれもとやることが分かれて、まとまりにくい。それでも、それぞれが光っている。", "note": "気をつけたいのは、無理に一本化しようとしないこと。", "act": "今日は「やることリストを統合しない」、別々のままで進める。"}, {"n": "北アメリカ星雲", "w": "大地の形した光", "r": "吉", "body": "今日は形が見えてくる日。漠然としていた計画やアイデアに、輪郭が現れる。これだ、と指せる地点に近づく。", "note": "気をつけたいのは、形が見えた途端に固めすぎないこと。", "act": "思いついたことを、地図／図解／落書きで描いてみる。"}, {"n": "ペリカン星雲", "w": "翼ひろげる影", "r": "吉", "body": "今日はゆるやかに広げる日。両手を広げるように、受け入れの幅を少し増やせる。誰かを許す、何かを呑み込む。", "note": "気をつけたいのは、広げすぎて自分が薄くなること。", "act": "ひとつだけ「いいよ」と言ってみる。"}, {"n": "亜鈴状星雲", "w": "両極に伸びる息", "r": "吉", "body": "今日は両方向に動く日。仕事と休み、攻めと守り、出すと受ける ── 両極のバランスが大事な一日。", "note": "気をつけたいのは、両方持つことが今日の正解、中途半端と感じすぎないこと。", "act": "朝と夜、それぞれ別の自分を出してみる。"}, {"n": "プレセペ星団", "w": "蜂の巣の集い", "r": "大吉", "body": "今日は仲間に集う日。誰かと一緒にいることで力が湧く、または楽しさが増す。一人より、群れの方が今日は良い。", "note": "気をつけたいのは、集団に流されて自分を見失わないこと。", "act": "今日は誰かに声をかけて、お茶でもごはんでも。"}, {"n": "ヘルクレス球状星団", "w": "束ねた光のかたまり", "r": "中吉", "body": "今日はみんなで一つにまとまる日。チーム、家族、グループの結束が深まる。一人では出ない力が、集まると出る。", "note": "気をつけたいのは、一人の時間を奪われないこと。", "act": "誰かと一緒に何かを作る／決める／始める。"}, {"n": "オメガ星団", "w": "南の大集会", "r": "大吉", "body": "今日は大きな場に出る日。普段より広いコミュニティ、人が多い場所、自分の世界の外に出ると吉。", "note": "気をつけたいのは、ひと声に圧倒されないこと、自分は自分のまま。", "act": "いつもより人の多い場所にあえて行く。"}, {"n": "ペルセウス二重星団", "w": "対の輝き", "r": "大吉", "body": "今日はパートナーシップの日。誰かと組むことで、ひとりでは出せない光が出る。恋愛、仕事、家族 ── 「対」が大事。", "note": "気をつけたいのは、相手任せにしないこと、対は自分も光るからこそ。", "act": "自分が組んでいる相手に、何かひとつ返してみる。"}, {"n": "ソンブレロ銀河", "w": "銀の輪を被る", "r": "中吉", "body": "今日は気品ある日。装い、所作、言葉づかい ── 少し丁寧にすると、流れがよくなる。背筋を伸ばしたほうが運が来る。", "note": "気をつけたいのは、堅苦しくなりすぎないこと。", "act": "いつもより少しいい服を選ぶ、または姿勢を意識する。"}, {"n": "子持ち銀河", "w": "寄り添う渦", "r": "大吉", "body": "今日は寄り添いの日。誰かを守る、または誰かに守られる ── 親子、年下、後輩、ペットなどの関係が今日のキー。", "note": "気をつけたいのは、過保護になりすぎないこと。", "act": "年下の誰か、後輩、家族に手をかける。"}, {"n": "三角座銀河", "w": "三角に住まう渦", "r": "吉", "body": "今日は三つで回す日。一つでも二つでもない、三つの要素を抱えると動きが出る。家庭・仕事・自分、または三人での話し合い。", "note": "気をつけたいのは、どれかを切らないこと、三つ揃ってこそ回る。", "act": "違う方向の3つを、今日まとめてやってみる。"}, {"n": "銀河系中心", "w": "銀河の沈黙の核", "r": "大凶", "body": "今日は手放す日。引き止めようとしていたものが、するりと手から離れていく。抵抗せず見送ることで、後の風通しがよくなる。", "note": "気をつけたいのは、失った気持ちに飲まれすぎないこと、それは終わりではなく流れ。", "act": "今日は新しいことを始めず、静かに過ごす。"}, {"n": "M87ブラックホール", "w": "初めて姿を見せた闇", "r": "凶", "body": "今日は避けてきたものと向き合う日。気づかないふりをしてきたこと、見たくなかった現実が、ふと姿を現す。「見る」ことが明日の出発点に。", "note": "気をつけたいのは、向き合おうとして自分を責めすぎないこと。気づくことと今すぐ解決することは別。", "act": "見たくなかったものを、目で確認する。中身を読まなくていい、開くだけでいい。"}, {"n": "SN1987A", "w": "我らが見た閃光", "r": "凶", "body": "今日は強い印象を受ける日。誰かの姿、出来事、ひとつの言葉が、強烈に心に焼き付く。終わりの予感を含んでいることもある。", "note": "気をつけたいのは、印象に振り回されすぎないこと、見届けたことに価値がある。", "act": "今日見た／聞いた言葉のひとつをメモする。"}];
+const RANK_CLASS = {'大吉':'daikichi','中吉':'chukichi','吉':'kichi','小吉':'shokichi','末吉':'suekichi','凶':'kyo','大凶':'daikyo'};
+function showFortune(){
+  const today = new Date();
+  const start = new Date(today.getFullYear(), 0, 0);
+  const diff = today - start;
+  const dayOfYear = Math.floor(diff / 86400000);
+  const idx = dayOfYear % FORTUNE_43.length;
+  const card = FORTUNE_43[idx];
+  const cls = RANK_CLASS[card.r] || 'kichi';
+  const dateStr = today.getFullYear() + '年' + (today.getMonth()+1) + '月' + today.getDate() + '日';
+  // ローディングを先に表示
+  const msgs = ['今夜の星に、問いかけています…','夜空のリズムに耳を傾けています…','今日のあなたに、星が語りかけてくれます…','宇宙の片隅から、言葉を呼んでいます…','今日の運勢を、星空から受け取ります…'];
+  const loadMsg = msgs[Math.floor(Math.random() * msgs.length)];
+  document.getElementById('fortune-content').innerHTML =
+    '<div class="loading-state" style="padding:2rem 0;text-align:center;">' +
+      '<div class="loading-pulse">✦</div>' +
+      '<div class="loading-text">' + loadMsg + '</div>' +
+    '</div>';
+  document.getElementById('fortune-bg').classList.add('show');
+  // 1.4秒後にカードへ
+  setTimeout(function(){
+    document.getElementById('fortune-content').innerHTML =
+      '<div style="text-align:center;">' +
+        '<div class="fortune-date">' + dateStr + '</div>' +
+        '<span class="fortune-rank ' + cls + '">' + card.r + '</span>' +
+        '<div class="fortune-name">' + card.n + '</div>' +
+        '<div class="fortune-word">「' + card.w + '」</div>' +
+      '</div>' +
+      '<div class="fortune-body">' + card.body + '</div>' +
+      '<div class="fortune-note">' + card.note + '</div>' +
+      '<div class="fortune-action">' +
+        '<div class="fortune-action-label">ラッキーアクション</div>' +
+        '<div class="fortune-action-text">' + card.act + '</div>' +
+      '</div>';
+  }, 1400);
+}
+function closeFortune(){ document.getElementById('fortune-bg').classList.remove('show'); }
+
 </script>
 
 </body>
