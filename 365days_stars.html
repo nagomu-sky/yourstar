@@ -656,13 +656,11 @@ const FORTUNE_43 = [{"n": "太陽", "w": "灯すもの", "r": "大吉", "body": 
 const RANK_CLASS = {'大吉':'daikichi','中吉':'chukichi','吉':'kichi','小吉':'shokichi','末吉':'suekichi','凶':'kyo','大凶':'daikyo'};
 function showFortune(){
   const today = new Date();
-  const start = new Date(today.getFullYear(), 0, 0);
-  const diff = today - start;
-  const dayOfYear = Math.floor(diff / 86400000);
-  const idx = dayOfYear % FORTUNE_43.length;
+  // 既存の dayOfYear と同じく閏年ベースで固定（3月1日は常に day61）
+  const doy = dayOfYear(today);
+  const idx = doy % FORTUNE_43.length;
   const card = FORTUNE_43[idx];
-  const cls = RANK_CLASS[card.r] || 'kichi';
-  const dateStr = today.getFullYear() + '年' + (today.getMonth()+1) + '月' + today.getDate() + '日';
+  const dateStr = (today.getMonth()+1) + '月' + today.getDate() + '日';
   // ローディングを先に表示
   const msgs = ['今夜の星に、問いかけています…','夜空のリズムに耳を傾けています…','今日のあなたに、星が語りかけてくれます…','宇宙の片隅から、言葉を呼んでいます…','今日の運勢を、星空から受け取ります…'];
   const loadMsg = msgs[Math.floor(Math.random() * msgs.length)];
@@ -677,8 +675,7 @@ function showFortune(){
     document.getElementById('fortune-content').innerHTML =
       '<div style="text-align:center;">' +
         '<div class="fortune-date">' + dateStr + '</div>' +
-        '<span class="fortune-rank ' + cls + '">' + card.r + '</span>' +
-        '<div class="fortune-name">' + card.n + '</div>' +
+          '<div class="fortune-name">' + card.n + '</div>' +
         '<div class="fortune-word">「' + card.w + '」</div>' +
       '</div>' +
       '<div class="fortune-body">' + card.body + '</div>' +
