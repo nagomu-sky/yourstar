@@ -656,9 +656,8 @@ const FORTUNE_43 = [{"n": "太陽", "w": "灯すもの", "r": "大吉", "body": 
 const RANK_CLASS = {'大吉':'daikichi','中吉':'chukichi','吉':'kichi','小吉':'shokichi','末吉':'suekichi','凶':'kyo','大凶':'daikyo'};
 function showFortune(){
   const today = new Date();
-  // 既存の dayOfYear と同じく閏年ベースで固定（3月1日は常に day61）
-  const doy = dayOfYear(today);
-  const idx = doy % FORTUNE_43.length;
+  // 押すたびランダム
+  const idx = Math.floor(Math.random() * FORTUNE_43.length);
   const card = FORTUNE_43[idx];
   const dateStr = (today.getMonth()+1) + '月' + today.getDate() + '日';
   // ローディングを先に表示
