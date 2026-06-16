@@ -693,9 +693,12 @@ function reveal() {
         '</div>' +
         (function(){
           const ch = getCompatCharacter(compat.label, compat.label === '鏡映し');
+          const headline = (compat.label === '鏡映し')
+            ? '「' + s1.word + '」がふたつ'
+            : '「' + s1.word + '」と「' + s2.word + '」';
           return '<div class="compat-character" style="border-color:' + ch.color + '40">' +
-            '<div class="compat-phrase" style="color:' + ch.color + '">' + ch.phrase + '</div>' +
-            '<div class="compat-sub">' + ch.sub + '</div>' +
+            '<div class="compat-phrase" style="color:' + ch.color + '">' + headline + '</div>' +
+            '<div class="compat-sub">' + ch.phrase + ' ── ' + ch.sub + '</div>' +
             (function(){
               const k = getKabbalah(compat.score);
               return '<div class="compat-score-line">' +
