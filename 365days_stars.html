@@ -234,6 +234,7 @@ button.go:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(179, 
   .compat-weave { font-size: 0.92rem; color: var(--sub); line-height: 1.95; margin-top: 0.5rem; }
   .compat-bond { font-size: 1.02rem; letter-spacing: 0.1em; margin-bottom: 0.7rem; opacity: 0.92; }
   .hl-mod { font-size: 0.68em; opacity: 0.78; letter-spacing: 0.06em; }
+  .compat-read { font-size: 0.95rem; color: var(--text); opacity: 0.88; line-height: 2; margin-top: 0.9rem; letter-spacing: 0.04em; }
 </style>
 </head>
 <body>
@@ -670,7 +671,7 @@ function reveal() {
       if (compat.axes.length > 0) {
         axesHtml = '<div class="axes-section">';
         compat.axes.forEach(ax => {
-          if (ax.label === '角度') return;
+          if (ax.label === '角度' || ax.label === '季節' || ax.label === '守護石') return;
           axesHtml += '<div class="axis-row"><span class="axis-label">' + ax.label + '</span><span class="axis-msg">' + ax.msg + '</span></div>';
         });
         axesHtml += '</div>';
@@ -696,14 +697,18 @@ function reveal() {
         (function(){
           const ch = getCompatCharacter(compat.label, compat.label === '鏡映し');
           const _opp = {spring:'autumn',autumn:'spring',summer:'winter',winter:'summer'};
-          const seasonTag = (s1.season===s2.season) ? '同じ季節' : (_opp[s1.season]===s2.season ? '半年の対' : '隣の季節');
-          const colorTag = (!s1.col||!s2.col) ? '' : (s1.col===s2.col ? '響き合う色' : (COMP_COLOR[s1.col]===s2.col ? '補い合う色' : '混ざり合う色'));
-          const compound = (compat.label==='鏡映し')
-            ? ch.phrase
-            : ch.phrase + '<span class="hl-mod">' + (colorTag ? ' ・ ' + colorTag + ' ・ ' + seasonTag : ' ・ ' + seasonTag) + '</span>';
+          const colorProse = (!s1.col||!s2.col) ? ''
+            : (s1.col===s2.col ? 'ふたりの守護石は、同じ色。似た波長を持ち、言葉にしなくても伝わり合えます。'
+            : (COMP_COLOR[s1.col]===s2.col ? 'ふたりの守護石は、向かい合う補色。片方に足りないものを、もう片方がそっと差し出せる間柄です。'
+            : 'ふたりの守護石は、異なる色。混ぜ合わせるほど、ふたりだけの新しい色が生まれていきます。'));
+          const seasonProse = (s1.season===s2.season) ? 'そして同じ季節に生まれ、流れる空気がはじめからよく似ています。'
+            : (_opp[s1.season]===s2.season ? 'そして生まれた季節は半年の対。遠く離れているからこそ、強く惹かれ合います。'
+            : 'そして生まれた季節は隣どうし。わずかなずれが、心地よいリズムになります。');
+          const readProse = (compat.label==='鏡映し') ? '' : (colorProse + seasonProse);
           return '<div class="compat-character" style="border-color:' + ch.color + '40">' +
-            '<div class="compat-phrase" style="color:' + ch.color + '">' + compound + '</div>' +
+            '<div class="compat-phrase" style="color:' + ch.color + '">' + ch.phrase + '</div>' +
             '<div class="compat-sub">' + ch.sub + '</div>' +
+            (readProse ? '<div class="compat-read">' + readProse + '</div>' : '') +
             (function(){
               const k = getKabbalah(compat.score);
               return '<div class="compat-score-line">' +
