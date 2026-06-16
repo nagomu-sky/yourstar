@@ -722,18 +722,35 @@ function showFortune(){
   const md = readMD('bday1');
   if (!md) { alert('まず、上の「あなたの誕生日」を選んでください'); return; }
   document.getElementById('fortune-bg').classList.add('show');
-  renderFortuneReading(md.m, md.d);
+  drawFortune(md.m, md.d);
 }
-function renderFortuneReading(m, d){
+function drawFortune(m, d){
+  const todayKey = (new Date()).toDateString();
+  const stored = JSON.parse(localStorage.getItem('fortune_today') || '{}');
+  let count = (stored.date === todayKey) ? (stored.count || 0) : 0;
+  let lastIdx = (stored.date === todayKey) ? stored.lastIdx : null;
+  let idx, isReplay = false;
+  if (count >= 3) {
+    idx = (lastIdx == null) ? 0 : lastIdx;
+    isReplay = true;
+  } else {
+    idx = Math.floor(Math.random() * FORTUNE_43.length);
+    count++;
+    localStorage.setItem('fortune_today', JSON.stringify({date: todayKey, count: count, lastIdx: idx}));
+  }
+  const card = FORTUNE_43[idx];
   const today = new Date();
   const dateStr = (today.getMonth()+1) + '月' + today.getDate() + '日';
-  const birthDay = mdToDay(m, d);
-  const todayDay = mdToDay(today.getMonth()+1, today.getDate());
-  // 誕生日×今日の日付で決まる一枚(その人のその日は固定・日替わり)
-  const idx = ((birthDay * 17 + todayDay * 7) % FORTUNE_43.length + FORTUNE_43.length) % FORTUNE_43.length;
-  const card = FORTUNE_43[idx];
-  const birthStar = STARS[birthDay-1];
-  const msgs = ['今日のあなたに、星が語りかけています…','今夜の星空から、言葉を受け取ります…','星のリズムに、耳を傾けています…'];
+  const remain = 3 - count;
+  let footer;
+  if (isReplay || count >= 3) {
+    footer = '<div class="fortune-count" style="opacity:0.55;">今日はこれで引きおさめです（また明日）</div>';
+  } else {
+    footer = '<div style="text-align:center;margin-top:1.2rem;">' +
+      '<button class="go" style="padding:0.7rem 2rem;font-size:0.95rem;" onclick="drawFortune(' + m + ',' + d + ')">もう一度引く（あと' + remain + '回）</button>' +
+      '</div>';
+  }
+  const msgs = ['今夜の星に、問いかけています…','夜空のリズムに耳を傾けています…','今日のあなたに、星が語りかけてくれます…'];
   document.getElementById('fortune-content').innerHTML =
     '<div class="loading-state" style="padding:2rem 0;text-align:center;">' +
       '<div class="loading-pulse">✦</div>' +
@@ -752,7 +769,7 @@ function renderFortuneReading(m, d){
         '<div class="fortune-action-label">ラッキーアクション</div>' +
         '<div class="fortune-action-text">' + card.act + '</div>' +
       '</div>' +
-      '<div class="fortune-count" style="opacity:0.55;">あなたの誕生星「' + birthStar.word + '」と、' + dateStr + 'の空が選んだ一枚</div>';
+      footer;
   }, 1100);
 }
 function closeFortune(){ document.getElementById('fortune-bg').classList.remove('show'); }
