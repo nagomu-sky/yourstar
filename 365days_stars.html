@@ -336,12 +336,23 @@ function formatDate(d) {
   return d.getFullYear() + "年 " + (d.getMonth()+1) + "月 " + d.getDate() + "日";
 }
 
+function daysInMonthMD(m){ const md=[31,29,31,30,31,30,31,31,30,31,30,31]; return m ? md[m-1] : 31; }
 function birthSelects(prefix){
   let mo = '<option value="">--月</option>', dy = '<option value="">--日</option>';
   for (let i=1;i<=12;i++) mo += '<option value="'+i+'">'+i+'月</option>';
   for (let i=1;i<=31;i++) dy += '<option value="'+i+'">'+i+'日</option>';
-  return '<select id="'+prefix+'-m" class="birth-select">'+mo+'</select>' +
+  return '<select id="'+prefix+'-m" class="birth-select" onchange="updateDays(\''+prefix+'\')">'+mo+'</select>' +
          '<select id="'+prefix+'-d" class="birth-select">'+dy+'</select>';
+}
+function updateDays(prefix){
+  const me = document.getElementById(prefix+'-m'), de = document.getElementById(prefix+'-d');
+  if (!me || !de) return;
+  const m = parseInt(me.value,10);
+  const max = m ? daysInMonthMD(m) : 31;
+  const cur = parseInt(de.value,10);
+  let dy = '<option value="">--日</option>';
+  for (let i=1;i<=max;i++) dy += '<option value="'+i+'"'+((cur===i)?' selected':'')+'>'+i+'日</option>';
+  de.innerHTML = dy;
 }
 function readMD(prefix){
   const me = document.getElementById(prefix+'-m'), de = document.getElementById(prefix+'-d');
