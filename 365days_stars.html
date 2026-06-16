@@ -518,14 +518,12 @@ function getPairStone(aspect, sameDay) {
 const COMP_COLOR = {'白':'緑','緑':'白','赤':'青','青':'赤','黒':'虹','虹':'黒','橙':'紫','紫':'橙','桃':'黄','黄':'桃'};
 const COMP_THEME = {'行動':'癒し','癒し':'行動','守護':'愛','愛':'守護','浄化':'豊穣','豊穣':'浄化','変容':'直感','直感':'変容','他':'他'};
 function stoneRelation(s1, s2){
-  const c1=s1.col, t1=s1.th, c2=s2.col, t2=s2.th;
+  const c1=s1.col, c2=s2.col;
   if (!c1 || !c2) return null;
-  const mine = '〔'+c1+'×'+t1+'〕', yours = '〔'+c2+'×'+t2+'〕';
-  if (c1===c2 && t1===t2) return { name:'双子の石', msg:'ふたりとも'+mine+'の石。色も意味も同じ、最も響き合う鏡のような二人。' };
-  if (c1===c2)            return { name:'兄妹の石', msg:'ふたりとも〔'+c1+'〕の石。あなたは〔'+t1+'〕、相手は〔'+t2+'〕。色で繋がる兄妹のような二人。' };
-  if (t1===t2)            return { name:'共鳴の石', msg:'あなたは〔'+c1+'〕、相手は〔'+c2+'〕。色は違っても、ともに〔'+t1+'〕を宿す共鳴の二人。' };
-  if (COMP_COLOR[c1]===c2 && COMP_THEME[t1]===t2) return { name:'補い合う石', msg:'あなたの'+mine+'と、相手の'+yours+'。反対の色と意味だからこそ、欠けを埋め合う最大の他者。' };
-  return { name:'自由な縁', msg:'あなたの'+mine+'と、相手の'+yours+'。決まった役のない、互いの色を自由に混ぜていける二人。' };
+  const st1 = s1.stone, st2 = s2.stone;
+  if (c1===c2)               return { name:'響き合う色', msg:'あなたの'+st1+'も、相手の'+st2+'も〔'+c1+'〕の石。同じ色の波長で、自然に通じ合う二人。' };
+  if (COMP_COLOR[c1]===c2)   return { name:'補い合う色', msg:'あなたの'+st1+'は〔'+c1+'〕、相手の'+st2+'は〔'+c2+'〕。向かい合う補色、足りないものを差し出し合う二人。' };
+  return { name:'混ざり合う色', msg:'あなたの'+st1+'は〔'+c1+'〕、相手の'+st2+'は〔'+c2+'〕。異なる色を持ち寄って、新しい色を生んでいく二人。' };
 }
 function calcCompat(s1, s2) {
   if (s1.day === s2.day) {
@@ -693,12 +691,9 @@ function reveal() {
         '</div>' +
         (function(){
           const ch = getCompatCharacter(compat.label, compat.label === '鏡映し');
-          const headline = (compat.label === '鏡映し')
-            ? '「' + s1.word + '」がふたつ'
-            : '「' + s1.word + '」と「' + s2.word + '」';
           return '<div class="compat-character" style="border-color:' + ch.color + '40">' +
-            '<div class="compat-phrase" style="color:' + ch.color + '">' + headline + '</div>' +
-            '<div class="compat-sub">' + ch.phrase + ' ── ' + ch.sub + '</div>' +
+            '<div class="compat-phrase" style="color:' + ch.color + '">' + ch.phrase + '</div>' +
+            '<div class="compat-sub">' + ch.sub + '</div>' +
             (function(){
               const k = getKabbalah(compat.score);
               return '<div class="compat-score-line">' +
