@@ -233,6 +233,7 @@ button.go:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(179, 
   .birth-select { background: rgba(20,22,50,0.8); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 0.7rem 0.9rem; font-size: 1rem; font-family: inherit; }
   .compat-weave { font-size: 0.92rem; color: var(--sub); line-height: 1.95; margin-top: 0.5rem; }
   .compat-bond { font-size: 1.02rem; letter-spacing: 0.1em; margin-bottom: 0.7rem; opacity: 0.92; }
+  .hl-mod { font-size: 0.68em; opacity: 0.78; letter-spacing: 0.06em; }
 </style>
 </head>
 <body>
@@ -697,11 +698,11 @@ function reveal() {
           const _opp = {spring:'autumn',autumn:'spring',summer:'winter',winter:'summer'};
           const seasonTag = (s1.season===s2.season) ? '同じ季節' : (_opp[s1.season]===s2.season ? '半年の対' : '隣の季節');
           const colorTag = (!s1.col||!s2.col) ? '' : (s1.col===s2.col ? '響き合う色' : (COMP_COLOR[s1.col]===s2.col ? '補い合う色' : '混ざり合う色'));
-          const compatBond = (compat.label==='鏡映し') ? '同じ星に守られて'
-            : (colorTag ? colorTag + ' ・ ' + seasonTag + 'の縁' : seasonTag + 'の縁');
+          const compound = (compat.label==='鏡映し')
+            ? ch.phrase
+            : ch.phrase + '<span class="hl-mod">' + (colorTag ? ' ・ ' + colorTag + ' ・ ' + seasonTag : ' ・ ' + seasonTag) + '</span>';
           return '<div class="compat-character" style="border-color:' + ch.color + '40">' +
-            '<div class="compat-phrase" style="color:' + ch.color + '">' + ch.phrase + '</div>' +
-            '<div class="compat-bond" style="color:' + ch.color + '">' + compatBond + '</div>' +
+            '<div class="compat-phrase" style="color:' + ch.color + '">' + compound + '</div>' +
             '<div class="compat-sub">' + ch.sub + '</div>' +
             (function(){
               const k = getKabbalah(compat.score);
