@@ -207,6 +207,42 @@ button.go:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(179, 
 .fortune-hint-accent { color: var(--accent2); }
 .tab.nudge { animation: tabNudge 0.45s ease 2; }
 @keyframes tabNudge { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+/* ===== 週の運勢(スプレッド+めくり) ===== */
+.weekly-btn { background: transparent; color: var(--accent2); border: 1px solid rgba(243,210,122,0.55); padding: 0.8rem 2.5rem; font-size: 0.95rem; border-radius: 30px; cursor: pointer; letter-spacing: 0.25em; font-weight: 600; font-family: inherit; margin: -0.6rem auto 1.5rem; display: block; transition: transform 0.2s, box-shadow 0.3s, background 0.3s; }
+.weekly-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(243, 210, 122, 0.25); background: rgba(243,210,122,0.08); }
+.weekly-btn.locked { opacity: 0.4; cursor: default; box-shadow: none; }
+.weekly-btn.locked:hover { transform: none; background: transparent; }
+.wk-title { text-align:center; font-size: 1.1rem; color: var(--accent2); letter-spacing: 0.3em; margin: 0.2rem 0 0.8rem; }
+.wk-daterange { text-align:center; color: var(--text); letter-spacing: 0.12em; font-size: 0.95rem; margin-bottom: 0.2rem; }
+.wk-person { text-align:center; color: var(--dim); font-size: 0.8rem; margin-bottom: 0.8rem; opacity: 0.9; }
+.wk-lead { text-align:center; color: var(--dim); font-size: 0.84rem; letter-spacing: 0.04em; margin-bottom: 1.3rem; line-height: 1.9; }
+.wk-grid { display: grid; gap: 16px 8px; justify-items: center; align-items: center; grid-template-areas: ". love ." "work overall money" ". health ."; grid-template-columns: 1fr auto 1fr; max-width: 430px; margin: 0 auto; }
+.wk-a-overall{grid-area:overall}.wk-a-love{grid-area:love}.wk-a-money{grid-area:money}.wk-a-work{grid-area:work}.wk-a-health{grid-area:health}
+.wk-slot { display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; transition: transform 0.18s; }
+.wk-slot:hover { transform: translateY(-3px); }
+.wk-flip { perspective: 900px; }
+.wk-flip-inner { position: relative; transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.2,0.7,0.25,1); }
+.wk-slot.revealed .wk-flip-inner { transform: rotateY(180deg); }
+.wk-card { display: block; width: 84px; height: auto; aspect-ratio: 360/568; border-radius: 8px; border: 1px solid rgba(243,210,122,0.3); filter: drop-shadow(0 8px 22px rgba(0,0,0,0.5)); -webkit-backface-visibility: hidden; backface-visibility: hidden; transform: rotateY(180deg); }
+.wk-slot.center .wk-card { width: 128px; }
+.wk-back { position: absolute; inset: 0; border-radius: 8px; border: 1px solid rgba(243,210,122,0.35); -webkit-backface-visibility: hidden; backface-visibility: hidden; background: repeating-linear-gradient(45deg, rgba(243,210,122,0.07) 0 2px, transparent 2px 11px), radial-gradient(circle at 50% 42%, rgba(243,210,122,0.18), transparent 62%), linear-gradient(170deg, #12173d, #070a1c); display: flex; align-items: center; justify-content: center; }
+.wk-back::after { content: ""; position: absolute; inset: 6px; border-radius: 6px; border: 1px solid rgba(243,210,122,0.22); }
+.wk-back svg { opacity: 0.8; }
+.wk-slot.active .wk-card { box-shadow: 0 0 0 2px var(--accent2), 0 0 24px rgba(243,210,122,0.35); }
+.wk-cap { font-size: 0.68rem; letter-spacing: 0.22em; color: var(--accent2); padding-left: 0.22em; }
+.wk-star { font-size: 0.72rem; color: var(--dim); text-align: center; line-height: 1.5; max-width: 128px; transition: opacity 0.5s ease 0.45s; }
+.wk-slot:not(.revealed) .wk-star { opacity: 0; }
+.wk-hint { text-align: center; font-size: 0.75rem; color: var(--dim); letter-spacing: 0.1em; margin-top: 1.1rem; opacity: 0.85; min-height: 1.2em; }
+.wk-reading { max-width: 34em; margin: 1.2rem auto 0; border-top: 1px solid var(--line); padding-top: 1.2rem; min-height: 7em; }
+.wk-reading-title { font-size: 1.15rem; color: var(--accent2); letter-spacing: 0.14em; font-weight: 600; margin-bottom: 0.3rem; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.wk-reading-title .wk-mark { font-size: 0.66rem; color: var(--accent2); letter-spacing: 0.08em; border: 1px solid rgba(243,210,122,0.4); border-radius: 999px; padding: 2px 10px; white-space: nowrap; font-weight: 400; opacity: 0.9; }
+.wk-reading-rule { width: 36px; height: 1px; margin: 0 0 0.9rem; background: linear-gradient(90deg, var(--accent2), transparent); }
+.wk-reading-body { font-size: 0.95rem; line-height: 2.05; letter-spacing: 0.03em; color: var(--text); }
+.wk-reading-body .wk-em { color: var(--accent2); font-weight: 600; }
+.wk-footnote { margin-top: 1.4rem; text-align: center; color: var(--dim); font-size: 0.68rem; line-height: 1.8; opacity: 0.8; }
+@media (max-width: 560px) { .wk-card { width: 66px; } .wk-slot.center .wk-card { width: 104px; } .wk-grid { gap: 12px 4px; } }
+
 .fortune-modal-bg { position: fixed; inset: 0; background: rgba(5, 7, 20, 0.85); backdrop-filter: blur(8px); z-index: 100; display: none; align-items: flex-start; justify-content: center; padding: 2rem 1rem; overflow-y: auto; }
 .fortune-modal-bg.show { display: flex; }
 .fortune-modal { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 2rem 1.5rem; max-width: 540px; width: 100%; position: relative; backdrop-filter: blur(10px); }
@@ -334,6 +370,7 @@ button.go:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(179, 
       <button class="tab" data-mode="compat" onclick="setMode('compat')">二人の相性</button>
     </div>
     <button class="fortune-btn" onclick="showFortune()">今 日 の 運 勢</button>
+    <button class="weekly-btn" onclick="showWeekly()">週 の 運 勢</button>
     <div id="fortune-hint" class="fortune-hint" style="display:none;">今日の運勢は<span class="fortune-hint-accent">「あなたの星」</span>モードで引けます</div>
     <div id="intro-card" class="intro-card">
       <div class="intro-text">
@@ -347,6 +384,12 @@ button.go:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(179, 
     <div class="fortune-modal">
       <button class="close-x" onclick="closeFortune()">✕</button>
       <div id="fortune-content"></div>
+    </div>
+  </div>
+  <div id="weekly-bg" class="fortune-modal-bg" onclick="if(event.target===this)closeWeekly()">
+    <div class="fortune-modal">
+      <button class="close-x" onclick="closeWeekly()">✕</button>
+      <div id="weekly-content"></div>
     </div>
   </div>
   <section id="result" class="result"></section>
@@ -668,6 +711,8 @@ function updateFortuneLock(){
   const btn = document.querySelector('.fortune-btn');
   const hint = document.getElementById('fortune-hint');
   if (btn) btn.classList.toggle('locked', locked);
+  const wbtn = document.querySelector('.weekly-btn');
+  if (wbtn) wbtn.classList.toggle('locked', locked);
   if (hint) hint.style.display = locked ? 'block' : 'none';
 }
 
@@ -958,6 +1003,265 @@ function drawFortune(){
   }, 1100);
 }
 function closeFortune(){ document.getElementById('fortune-bg').classList.remove('show'); }
+
+/* ============================================================
+   週の運勢 ── 43天体カード・スプレッド(中央=全体運+四方4項目)
+   結果は「誕生日 × ISO週」で決定的。週のあいだ同じ5枚、月曜で週替わり。
+   ============================================================ */
+const WK_CATS = [
+  {key:'overall', label:'全体運'},
+  {key:'love',    label:'恋愛運'},
+  {key:'money',   label:'金運'},
+  {key:'work',    label:'仕事運'},
+  {key:'health',  label:'健康運'}
+];
+
+/* 43枚 → 9テーマ群(重複なし) */
+const WK_THEME_OF = {
+  /* T1 光と中心 */
+  '太陽':'T1','オリオン大星雲':'T1','ばら星雲':'T1','ソンブレロ銀河':'T1',
+  /* T2 流れと移ろい */
+  '月':'T2','海王星':'T2','エウロパ':'T2','タイタン':'T2',
+  /* T3 決意と情熱 */
+  '火星':'T3','イオ':'T3','天王星':'T3',
+  /* T4 守りと巡り */
+  '木星':'T4','ハレー彗星':'T4','ガニメデ':'T4','子持ち銀河':'T4','大マゼラン雲':'T4',
+  /* T5 積み重ねと時 */
+  '土星':'T5','カリスト':'T5','環状星雲':'T5','地球':'T5',
+  /* T6 伝達と知性 */
+  '水星':'T6','アンドロメダ銀河':'T6','北アメリカ星雲':'T6','三角座銀河':'T6',
+  /* T7 愛と育み */
+  '金星':'T7','ペルセウス二重星団':'T7','創造の柱':'T7','小マゼラン雲':'T7',
+  /* T8 集いと結束 */
+  '天の川銀河':'T8','プレセペ星団':'T8','ヘルクレス球状星団':'T8','オメガ星団':'T8','ペリカン星雲':'T8','亜鈴状星雲':'T8',
+  /* T9 変容と手放し */
+  '冥王星':'T9','馬頭星雲':'T9','蟹星雲':'T9','エンケラドゥス':'T9','干潟星雲':'T9','三裂星雲':'T9','銀河系中心':'T9','M87ブラックホール':'T9','SN1987A':'T9'
+};
+
+/* テーマ群 × 項目 の読み(45本)。{言葉} は星の言葉に置換 */
+const WK_READINGS = {
+  T1:{
+    overall:'今週はあなた自身が光源になる流れ。{言葉}が示すように、無理に背伸びをしなくても、ただそこに在るだけで場の空気が明るく整っていきます。人の輪の中心に呼ばれる場面が増えるはず。受け取った視線を負担に感じず、自然体のまま過ごすことが、いちばん遠くまで光を届けます。',
+    love:'飾らないあなたが、いちばん魅力的に映る一週間。{言葉}の通り、取り繕った言葉より、ふとした笑顔や素のしぐさが相手の心を温めます。気になる人がいるなら、こちらから先に明るさを差し出してみて。すでに連れ添う相手とは、当たり前の時間にあらためて光を見いだせる週です。',
+    money:'自分を心地よく見せるものへの出費が、巡り巡って良い縁を呼びます。{言葉}のように、安さより「気分が上がるか」で選ぶと満足度が高い週。見栄のための買い物は控えめに、けれど自分を励ます一品には素直になって。注いだぶんが、別の形で返ってきやすい流れです。',
+    work:'あなたの存在が、チームの基準点になる週。{言葉}が告げるように、声を張らずとも、姿勢や仕上がりが周囲の手本になります。新しい企画や場の立ち上げにも追い風。完璧を待たず、まず明かりを灯すように始めることが、後の大きな実りの種になります。',
+    health:'心の張りが、そのまま体の調子に表れる一週間。{言葉}のように、よく晴れた気分でいられるよう、朝の光を浴びる・背筋を伸ばすといった小さな習慣が効きます。自分を後回しにしがちな人ほど、今週は自分を真ん中に置いて。内側から整うと、表情まで明るくなります。'
+  },
+  T2:{
+    overall:'今週は流れに身をゆだねるほど、物事がやわらかくほどけていきます。{言葉}が示すように、白黒つけたくなっても、いまは決めきらず移ろいを面白がる姿勢が吉。直感がいつもより冴える週なので、理屈で押し切るより、心が傾く方へそっと寄ってみてください。',
+    love:'言葉にしきれない気持ちが、関係を深める鍵になる週。{言葉}の通り、表面は穏やかでも、水面下で互いの心が静かに動いています。急いで答えを求めず、沈黙や余白も大切に。相手の小さな表情の変化に気づけたとき、思いがけず距離がぐっと縮まります。',
+    money:'数字を細かく追うより、流れ全体を眺めるとよい一週間。{言葉}が告げるように、いま結果が見えなくても、内側で価値が静かに育っています。衝動的な大きな決断は先送りに。直感が「待て」と言うなら、その声を信じて。焦らない人ほど、後で得をしやすい週です。',
+    work:'見通しが立ちにくくても、一歩は確実に進める週。{言葉}のように、霧の向こうが見えなくても、足元の作業を淡々と重ねていけば道はつながります。論理で詰めきれない案件は、感覚や経験に頼って構いません。曖昧さを抱えたまま進める強さが、今週のあなたにはあります。',
+    health:'心と体のリズムが、ゆったり波打つ一週間。{言葉}が示すように、無理に気分を上げようとせず、揺れをそのまま受け入れて休むことが回復につながります。水を多めにとる、湯にゆっくり浸かるなど、流れを整える養生が合う週。眠りを削らないことを最優先に。'
+  },
+  T3:{
+    overall:'胸の奥で温めてきたものを、今週こそ形にできる流れ。{言葉}が示すように、最初の一歩さえ踏み出せば、あとは勢いが背中を押してくれます。同じ道を繰り返すより、ひとつだけいつもと違う選択を。その小さな決断が、週の後半に思いがけない発見を運んできます。',
+    love:'受け身でいるより、自分から動いたほうが報われる一週間。{言葉}の通り、心の中で温めていた思いを、今週はそっと言葉や行動にしてみて。タイミングを待ちすぎないことが鍵です。新しい出会いを求める人は、いつもと違う場所へ足を運ぶと、新鮮な縁が芽生えます。',
+    money:'温めてきた計画にお金を動かすなら、今週が始めどき。{言葉}が告げるように、迷っていた一手を踏み出すと流れが生まれます。ただし勢い任せの大盤振る舞いは禁物。最初の一歩は小さく、手応えを確かめながら。情熱と慎重さを両輪で回せば、注いだ熱が形に変わります。',
+    work:'内側から湧くやる気が、滞っていた物事を一気に動かす週。{言葉}のように、エネルギーが余るほど出てくるので、後回しにしていた案件に着手する好機です。先陣を切る役割が回ってきたら、思いきって引き受けて。あなたの一歩が、周りの動き出すきっかけになります。',
+    health:'体の中から力が噴き出すような、活気のある一週間。{言葉}が示すように、動きたい気持ちが高まるので、運動を始める・再開するには絶好の時期です。ただし勢いのまま飛ばしすぎると反動が来ることも。熱を出しきる日と休む日のメリハリを意識すると、調子が長続きします。'
+  },
+  T4:{
+    overall:'今週は目に見えない後ろ盾に守られている流れ。{言葉}が示すように、運の巡りやめぐり合わせが静かにあなたを支えています。無理に流れに逆らわず、来たものを素直に受け取って構いません。遠ざかっていた縁やテーマが、形を変えて戻ってくる予感もある一週間です。',
+    love:'縁が巡り、関係に温かさが満ちる一週間。{言葉}の通り、横にいてくれる人の存在に、あらためて気づける週です。過去にご縁のあった相手と再びつながることも。誰かに支えられていると感じたら、その気持ちを言葉にして返して。守り守られる循環が、二人の絆を深めます。',
+    money:'思いがけない助けや巡り合わせが、金運を底上げする週。{言葉}が告げるように、人からの紹介や、めぐってきた話の中に良い種があります。自分ひとりで抱え込まず、信頼できる人に相談を。守られている流れなので、堅実に動けば大きく崩れることはありません。受けた縁には感謝を忘れずに。',
+    work:'周囲の後押しで、ひとりでは届かない地点に近づける週。{言葉}のように、横にいる存在があなたを大きく支えてくれます。素直に力を借りることが今週の成功の鍵。過去に関わった人や案件が、再び巡ってくることも。ご縁を丁寧に扱えば、思わぬ形で道が開けます。',
+    health:'支えられている安心感が、心身をゆるめてくれる一週間。{言葉}が示すように、誰かに頼ること自体が、今週の養生になります。ひとりで頑張りすぎず、周りに甘えてよい週。身近な人との穏やかな時間が、何よりの回復薬です。守られている感覚を、どうか味方にしてください。'
+  },
+  T5:{
+    overall:'今週は派手さより、積み重ねに意味が宿る流れ。{言葉}が示すように、地味でも続けてきたことが、思っているより遠くまであなたを連れてきています。焦って大きく動くより、足元の暮らしを整え、当たり前を丁寧に。一巡りの区切りを迎え、次へ進む静かな準備が整う週です。',
+    love:'時間をかけて育ててきた関係が、しみじみ実る一週間。{言葉}の通り、派手な進展より、積み重ねた信頼が温かさとして返ってきます。新しい出会いを焦るより、すでにある縁を大切に。過去の経験で得た優しさが、いまの相手への思いやりとして自然ににじみ出る週です。',
+    money:'コツコツ続けてきた習慣が、地味に効いてくる一週間。{言葉}が告げるように、家計の見直しや積立など、堅実な積み重ねがちょうど一巡りして実りを見せます。大きな勝負より、足元を固める時期。これまでの経験を活かせば、無駄な出費を上手に避けられます。',
+    work:'継続が物を言う、地に足のついた一週間。{言葉}のように、過去にぶつかった壁や失敗が、いまのあなたを助ける道具に変わります。新しさを追うより、これまでの蓄積を整理し直すと吉。長く続けてきた取り組みが一区切りを迎え、次の段階へ進む手応えを得られます。',
+    health:'日々の小さな習慣が、確かな土台になる一週間。{言葉}が示すように、特別なことより、当たり前の生活リズムを整えることが何より効きます。睡眠・食事・歩く習慣を淡々と続けて。これまで重ねてきた養生が、思っている以上にあなたの体を支えていると気づける週です。'
+  },
+  T6:{
+    overall:'今週は情報や知らせが、流れを動かす起点になります。{言葉}が示すように、届く連絡・届ける連絡の両方に良い動きがある週。狭く考えていたことが「もっとある」と広がり、視野がひらけていきます。点と点をつなぐように、複数の要素を組み合わせると物事が回りはじめます。',
+    love:'言葉とやりとりが、関係を前へ進める一週間。{言葉}の通り、こまめな連絡や、ふとしたメッセージが距離を縮めます。気になる人には、軽やかな一言を送ってみて。相手の話に耳を澄ませ、視野を広げて受け止めると、思いがけない共通点や可能性が見えてくる週です。',
+    money:'情報収集がそのまま金運につながる一週間。{言葉}が告げるように、いま手に入る知らせの中に、得につながる手がかりがあります。比較し、調べ、輪郭をはっきりさせてから動くと無駄がありません。複数の選択肢を並べて検討する姿勢が、賢い判断とお金の余裕を生みます。',
+    work:'連絡・調整・段取りが冴える、頭の回る一週間。{言葉}のように、ぼんやりしていた計画に、はっきりした輪郭が現れます。「これだ」と指せる地点に近づける週。情報を整理し、関係者へこまめに共有することが評価につながります。三つの要素を束ねて回す視点を持つと、仕事が一段進みます。',
+    health:'頭が働きすぎて、休むのを忘れやすい一週間。{言葉}が示すように、情報が多く入る週だからこそ、意識して脳を休ませる時間を。寝る前の画面を控える、考えごとを書き出して手放すなど、頭の整理が眠りの質を上げます。視野を広げるついでに、休息の予定も組み込んで。'
+  },
+  T7:{
+    overall:'今週は心が動く出会いや、美しさに気づく機会が多い流れ。{言葉}が示すように、誰かと笑い合える場面が増え、人とのつながりが温度を持ちます。一人で抱えず、誰かと「対」で組むことで、あなたひとりでは出せない光が生まれる週。慈しみの気持ちが、巡って返ってきます。',
+    love:'愛と美の気配が満ちる、関係に追い風の一週間。{言葉}の通り、心ときめく出会いや、相手との距離が縮まる場面が訪れます。パートナーがいる人は、二人で過ごす時間に新鮮な輝きが戻る週。小さなものや弱い立場の存在を大切にする優しさが、そのままあなたの魅力として伝わります。',
+    money:'人との縁や、慈しみから生まれる豊かさがテーマの週。{言葉}が告げるように、贈り物やもてなしなど、誰かのために使うお金が良い循環を生みます。見返りを求めず差し出したものが、巡って返ってくる流れ。育ててきた取り組みが、ここで小さな実りを見せることもあります。',
+    work:'誰かと組むことで力が倍になる、協働向きの一週間。{言葉}のように、パートナーや相棒との連携が、ひとりでは届かない成果を生みます。後輩や年下を育てる役回りにも追い風。手をかけて世話してきた案件が、ぐっと伸びる週です。丁寧に育てた人ほど、報われを感じられます。',
+    health:'心が満たされることが、そのまま体を癒す一週間。{言葉}が示すように、好きな人や好きなものに触れる時間が、何よりの養生になります。美しいものを眺める、心地よい香りに包まれるなど、感性を喜ばせて。誰かを慈しむ温かさが、自分自身の緊張もやわらかくほどいてくれます。'
+  },
+  T8:{
+    overall:'今週は、群れの中にいることで力が湧く流れ。{言葉}が示すように、一人で頑張るより、仲間と一緒にいるほうが物事が前へ進みます。普段より広い場や、自分の世界の外へ出ると吉。受け入れの幅を少し広げ、攻めと守りの両極をうまく行き来できると、週全体が軽やかに回ります。',
+    love:'人の集まる場が、縁を運んでくる一週間。{言葉}の通り、グループでの時間や、いつもより広い輪の中に出会いの種があります。気になる人とは、二人きりより仲間も交えた場のほうが自然に距離が縮まる週。心の扉を少し広く開けておくと、思いがけない人とつながれます。',
+    money:'人とのつながりが、お金の流れを良くする一週間。{言葉}が告げるように、共同で取り組むことや、仲間内での情報が得につながります。一人で抱え込むより、シェアや割り勘、協力の発想が吉。出すときと受けるとき、両方のバランスを意識すると、無理なく豊かさが巡ります。',
+    work:'チームの結束が深まり、一人では出ない力が出る週。{言葉}のように、家族・仲間・グループでまとまることが成果を生みます。広いコミュニティや人の多い場に出ると、新しい縁や評価が待っています。受け入れの幅を広げ、誰かを許し呑み込む度量が、あなたの立場を一段引き上げます。',
+    health:'人とのつながりが、心の支えになる一週間。{言葉}が示すように、誰かと一緒に体を動かす・食事をするなど、群れの中で過ごす時間が元気をくれます。孤独を抱え込まないことが今週の養生。攻めと守り、活動と休息の両極のバランスをとると、心身ともに調子が整います。'
+  },
+  T9:{
+    overall:'今週は古いものが脱げ、新しいかたちが見えはじめる流れ。{言葉}が示すように、終わりに見えたものが、実は始まりだったと気づく週です。引き止めていたものを手放すと、後の風通しがよくなります。避けてきた現実とそっと向き合うことが、次の一歩の確かな出発点になります。',
+    love:'関係の節目を、静かに受け入れる一週間。{言葉}の通り、古い形が脱げて、二人の間に新しいかたちが見えてくる週です。無理に引き止めず、変化を見送る勇気が、かえって良い循環を生みます。これまで避けてきた本音と向き合えたとき、関係はより誠実なものへと深まります。',
+    money:'手放すことで、巡りが良くなる一週間。{言葉}が告げるように、抱え込んでいた不要なものや惰性の出費を見直すと、流れが整います。執着を緩めるほど、新しい余白が生まれる週。厳しく見えた状況の中に、思いがけない芽が顔を出すこともあるので、悲観せず整理を進めて。',
+    work:'古い役回りが脱げ、新しい段階へ移る一週間。{言葉}のように、終わりや区切りに見えたものが、次の始まりの合図です。避けてきた課題に名前をつけ、向き合うことが明日の出発点になります。手放すべき役割は潔く手放して。身軽になったぶん、新しい可能性が入ってくる余地が生まれます。',
+    health:'溜め込んだものを手放し、心身を軽くする一週間。{言葉}が示すように、抱えてきた疲れや気がかりを、いったん下ろすことが回復の鍵です。古い習慣を見直す好機でもある週。無理に抗わず、流れに身を任せて整えると、思っていたより深く休めます。脱皮のあとには、軽さが待っています。'
+  }
+};
+
+function wkIsoWeek(date){
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const day = (d.getUTCDay() + 6) % 7;
+  d.setUTCDate(d.getUTCDate() - day + 3);
+  const isoYear = d.getUTCFullYear();
+  const jan4 = new Date(Date.UTC(isoYear, 0, 4));
+  const jan4day = (jan4.getUTCDay() + 6) % 7;
+  const week1Mon = new Date(jan4);
+  week1Mon.setUTCDate(jan4.getUTCDate() - jan4day);
+  const week = Math.floor((d - week1Mon) / (7 * 86400000)) + 1;
+  return {year: isoYear, week: week};
+}
+function wkMondayOf(date){
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const day = (d.getDay() + 6) % 7;
+  d.setDate(d.getDate() - day);
+  return d;
+}
+function wkRng(seed){
+  let a = seed >>> 0;
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function wkDrawFive(month, day){
+  const iso = wkIsoWeek(new Date());
+  const seed = ((iso.year * 100 + iso.week) * 10000 + month * 100 + day) >>> 0;
+  const rng = wkRng(seed);
+  const idx = FORTUNE_43.map(function(_, i){ return i; });
+  for(let i = idx.length - 1; i > 0; i--){
+    const j = Math.floor(rng() * (i + 1));
+    const tmp = idx[i]; idx[i] = idx[j]; idx[j] = tmp;
+  }
+  return idx.slice(0, 5).map(function(i){ return FORTUNE_43[i]; });
+}
+function wkEsc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function wkFillReading(tpl, word){
+  const emph = '〈<span class="wk-em">' + wkEsc(word) + '</span>〉';
+  return wkEsc(tpl).split('{言葉}').join(emph);
+}
+function wkFmtMD(d){ return (d.getMonth()+1) + '月' + d.getDate() + '日'; }
+
+function showWeekly(){
+  if (mode === 'compat') {
+    updateFortuneLock();
+    const t = document.querySelector('.tab[data-mode="single"]');
+    if (t) { t.classList.add('nudge'); setTimeout(function(){ t.classList.remove('nudge'); }, 1100); }
+    return;
+  }
+  const a = readMD('bday1');
+  if (!a) { alert('まず、上で「あなたの誕生日」を選んでください'); return; }
+  document.getElementById('weekly-bg').classList.add('show');
+  renderWeekly(a.m, a.d);
+}
+function closeWeekly(){ document.getElementById('weekly-bg').classList.remove('show'); }
+
+function renderWeekly(m, d){
+  const now = new Date();
+  const mon = wkMondayOf(now);
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  const five = wkDrawFive(m, d);
+
+  const backSVG =
+    '<svg width="30" height="30" viewBox="0 0 40 40">' +
+      '<circle cx="20" cy="20" r="2.6" fill="#f3d27a"/>' +
+      '<g stroke="#f3d27a" stroke-width="0.8" opacity="0.85">' +
+        '<line x1="20" y1="5" x2="20" y2="14"/><line x1="20" y1="26" x2="20" y2="35"/>' +
+        '<line x1="5" y1="20" x2="14" y2="20"/><line x1="26" y1="20" x2="35" y2="20"/>' +
+      '</g>' +
+      '<circle cx="20" cy="20" r="8.5" fill="none" stroke="#f3d27a" stroke-width="0.5" opacity="0.45"/>' +
+    '</svg>';
+
+  const cont = document.getElementById('weekly-content');
+  cont.innerHTML = '';
+
+  const head = document.createElement('div');
+  head.innerHTML =
+    '<div class="wk-title">週 の 運 勢</div>' +
+    '<div class="wk-daterange">' + wkFmtMD(mon) + ' 〜 ' + wkFmtMD(sun) + '</div>' +
+    '<div class="wk-person">― あなた（' + m + '/' + d + '）の今週 ―</div>' +
+    '<div class="wk-lead">今週の5枚が、裏向きで届いています。<br>1枚ずつ、めくってください。</div>';
+  cont.appendChild(head);
+
+  const grid = document.createElement('div');
+  grid.className = 'wk-grid';
+
+  const hint = document.createElement('div');
+  hint.className = 'wk-hint';
+
+  const readingBox = document.createElement('div');
+  readingBox.className = 'wk-reading';
+
+  let revealedCount = 0;
+  let readingTimer = null;
+
+  function updateHint(){
+    hint.textContent = revealedCount >= 5
+      ? '今週の5枚が出そろいました'
+      : 'カードをタップしてめくる（' + revealedCount + ' / 5）';
+  }
+
+  WK_CATS.forEach(function(cat, i){
+    const star = five[i];
+    const theme = WK_THEME_OF[star.n] || 'T1';
+    const tpl = (WK_READINGS[theme] && WK_READINGS[theme][cat.key]) || '';
+    const reading = wkFillReading(tpl, star.w);
+
+    const slot = document.createElement('div');
+    slot.className = 'wk-slot wk-a-' + cat.key + (cat.key === 'overall' ? ' center' : '');
+    slot.innerHTML =
+      '<div class="wk-flip"><div class="wk-flip-inner">' +
+        '<img class="wk-card" src="' + (CARD_SVG[star.n] || '') + '" alt="' + wkEsc(star.n) + '">' +
+        '<div class="wk-back">' + backSVG + '</div>' +
+      '</div></div>' +
+      '<div class="wk-cap">' + wkEsc(cat.label) + '</div>' +
+      '<div class="wk-star">' + wkEsc(star.n) + '</div>';
+
+    function showReading(){
+      readingBox.innerHTML =
+        '<div class="wk-reading-title">' + wkEsc(cat.label) +
+          '<span class="wk-mark">' + wkEsc(star.n) + '「' + wkEsc(star.w) + '」</span>' +
+        '</div>' +
+        '<div class="wk-reading-rule"></div>' +
+        '<div class="wk-reading-body">' + reading + '</div>';
+    }
+
+    slot.addEventListener('click', function(){
+      grid.querySelectorAll('.wk-slot').forEach(function(el){ el.classList.remove('active'); });
+      slot.classList.add('active');
+      if (readingTimer) { clearTimeout(readingTimer); readingTimer = null; }
+      if (!slot.classList.contains('revealed')) {
+        slot.classList.add('revealed');
+        revealedCount++;
+        updateHint();
+        readingTimer = setTimeout(showReading, 480);
+      } else {
+        showReading();
+      }
+    });
+
+    grid.appendChild(slot);
+  });
+
+  cont.appendChild(grid);
+  cont.appendChild(hint);
+  cont.appendChild(readingBox);
+  updateHint();
+
+  const foot = document.createElement('div');
+  foot.className = 'wk-footnote';
+  foot.innerHTML = '※ 結果は「誕生日 × 今週」で決まります。同じ週のあいだは同じ5枚（月曜で週替わり）。<br>誕生日ごとに違う結果になるので、大切な人の誕生日でも占えます。';
+  cont.appendChild(foot);
+}
+
 
 </script>
 
