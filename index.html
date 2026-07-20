@@ -240,6 +240,9 @@ button.go:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(179, 
 .wk-reading-rule { width: 36px; height: 1px; margin: 0 0 0.9rem; background: linear-gradient(90deg, var(--accent2), transparent); }
 .wk-reading-body { font-size: 0.95rem; line-height: 2.05; letter-spacing: 0.03em; color: var(--text); }
 .wk-reading-body .wk-em { color: var(--accent2); font-weight: 600; }
+.fx-bridge { display: block; margin: 0.15em 0 0.1em; }
+.fortune-empathy { max-width: 30em; margin: 0.8rem auto 1.1rem; text-align: center; font-size: 0.88rem; line-height: 1.9; color: var(--accent); opacity: 0.95; }
+.wk-guide { display: block; margin-top: 0.5rem; color: var(--accent2); font-weight: 600; }
 .wk-footnote { margin-top: 1.4rem; text-align: center; color: var(--dim); font-size: 0.68rem; line-height: 1.8; opacity: 0.8; }
 @media (max-width: 560px) { .wk-card { width: 66px; } .wk-slot.center .wk-card { width: 104px; } .wk-grid { gap: 12px 4px; } }
 
@@ -938,13 +941,24 @@ function drawFortune(){
   const isSameDay = (stored.date === todayKey);
   let count = isSameDay ? (stored.count || 0) : 0;
   let lastIdxs = (isSameDay && Array.isArray(stored.idxs)) ? stored.idxs : null;
-  function pickDistinct(n){
+  // その日すでに出したカードを覚えておき、引き直しで同じ札が出ないようにする
+  let seen = (isSameDay && Array.isArray(stored.seen)) ? stored.seen.slice() : [];
+  function pickDistinct(n, exclude){
+    exclude = exclude || [];
+    let pool = [];
+    for (let i = 0; i < FORTUNE_43.length; i++) {
+      if (exclude.indexOf(i) === -1) pool.push(i);
+    }
+    // 除外しすぎて足りなくなったら制限を解除（引き直し上限より札が少ない場合の保険）
+    if (pool.length < n) {
+      pool = [];
+      for (let i = 0; i < FORTUNE_43.length; i++) pool.push(i);
+    }
     const out = [];
-    let guard = 0;
-    while (out.length < n && guard < 500) {
-      const r = Math.floor(Math.random() * FORTUNE_43.length);
-      if (out.indexOf(r) === -1) out.push(r);
-      guard++;
+    while (out.length < n && pool.length > 0) {
+      const r = Math.floor(Math.random() * pool.length);
+      out.push(pool[r]);
+      pool.splice(r, 1);
     }
     return out;
   }
@@ -952,15 +966,17 @@ function drawFortune(){
   if (count >= 3) {
     isReplay = true;
     if (!lastIdxs || lastIdxs.length < people.length) {
-      idxs = pickDistinct(people.length);
-      lsSet('fortune_today2', JSON.stringify({date: todayKey, count: count, idxs: idxs}));
+      idxs = pickDistinct(people.length, seen);
+      seen = seen.concat(idxs);
+      lsSet('fortune_today2', JSON.stringify({date: todayKey, count: count, idxs: idxs, seen: seen}));
     } else {
       idxs = lastIdxs;
     }
   } else {
-    idxs = pickDistinct(people.length);
+    idxs = pickDistinct(people.length, seen);
     count++;
-    lsSet('fortune_today2', JSON.stringify({date: todayKey, count: count, idxs: idxs}));
+    seen = seen.concat(idxs);
+    lsSet('fortune_today2', JSON.stringify({date: todayKey, count: count, idxs: idxs, seen: seen}));
   }
   const today = new Date();
   const dateStr = (today.getMonth()+1) + '月' + today.getDate() + '日';
@@ -985,16 +1001,20 @@ function drawFortune(){
     people.forEach(function(p, i){
       const card = FORTUNE_43[idxs[i]];
       if (multi) html += '<div style="text-align:center;color:var(--accent2);letter-spacing:0.15em;font-size:0.9rem;margin:1.4rem 0 0.6rem;opacity:0.9;">― ' + p.label + '（' + p.m + '/' + p.d + '）の今日 ―</div>';
+      const themeKey = (typeof WK_THEME_OF !== 'undefined' && WK_THEME_OF[card.n]) || 'T1';
+      const empathy = pickEmpathy(themeKey) + '<span class="fx-bridge">──今日の一枚。</span>';
+      const noteV2 = NOTE_V2[card.n] || card.note;
       html +=
+        '<div class="fortune-empathy">' + empathy + '</div>' +
         '<div class="card-stage">' +
           '<img class="card-img" src="' + (CARD_SVG[card.n] || '') + '" alt="' + card.n + '／' + card.w + '">' +
           '<h2 class="fortune-name">' + card.n + '</h2>' +
           '<div class="fortune-word">「' + card.w + '」</div>' +
         '</div>' +
         '<div class="fortune-body">' + card.body + '</div>' +
-        '<div class="fortune-note">' + card.note + '</div>' +
+        '<div class="fortune-note">ひとつだけ、頭の隅に── ' + noteV2 + '</div>' +
         '<div class="fortune-action">' +
-          '<div class="fortune-action-label">ラッキーアクション</div>' +
+          '<div class="fortune-action-label">今日の道しるべ</div>' +
           '<div class="fortune-action-text">' + card.act + '</div>' +
         '</div>';
       if (multi && i < people.length - 1) html += '<div class="divider-line" style="margin:1.8rem 0;"></div>';
@@ -1008,6 +1028,13 @@ function closeFortune(){ document.getElementById('fortune-bg').classList.remove(
    週の運勢 ── 43天体カード・スプレッド(中央=全体運+四方4項目)
    結果は「誕生日 × ISO週」で決定的。週のあいだ同じ5枚、月曜で週替わり。
    ============================================================ */
+
+/* ===== 占い文章v2(2026/7/12): 共感27本・影のかけら43本・週の道しるべ45本 ===== */
+const DAILY_EMPATHY = {"T1": ["最近、あなたが場の真ん中に置かれる場面が増えています。気づいていますね。", "自分が思っているより、あなたの動きは周りに見られています。悪い意味ではなく。", "「自分なんて」と言いながら、ちゃんと場を明るくしているのがあなたです。"], "T2": ["白黒つけたいのに、つけられないことをひとつ抱えていますね。", "気分の浮き沈みが、ここ数日すこし大きめです。それ自体は、悪いことではありません。", "理屈より勘のほうが冴えている時期に、入っています。"], "T3": ["胸の中で温めているものが、そろそろ外に出たがっています。", "「やろうと思ってること」の話を、最近誰かにしましたね。あれは本気の合図です。", "動きたいエネルギーが余っています。置き場所を探しているだけで。"], "T4": ["最近、誰かに助けられた場面をひとつ、思い出せるはずです。", "ひとりで抱えている荷物が、実は周りからちゃんと見えています。", "昔の縁が、ふと頭をよぎった日が最近ありましたね。"], "T5": ["続けていることの意味を、ふと疑いたくなる時期ですね。", "派手さはないけれど、あなたの足元には確かに積み上がったものがあります。", "「まだ足りない」が口癖になりかけています。もう結構、積んでいます。"], "T6": ["返しそびれている連絡が、頭の隅に引っかかっていますね。", "情報を集めるほど、かえって決めにくくなっている件がひとつあるはずです。", "言葉にすれば整理がつくことを、まだ頭の中だけでこねています。"], "T7": ["大切にしたい人の顔が、いま浮かびましたね。", "誰かのために使った時間を、無駄だったかなと思う瞬間がありました。無駄ではありません。", "かわいがっているもの──人でも、植物でも、仕事でも──がひとつ、育ってきています。"], "T8": ["ひとりの時間と、誰かといる時間のバランスが、少し崩れていますね。", "顔を出そうか迷っている集まりが、ひとつあるはずです。", "「自分だけ浮いてないかな」と思う場面がありましたね。思っているのは、あなただけではありません。"], "T9": ["終わらせたいのに終わらせられないことを、ひとつ持っていますね。", "前の自分なら喜んだはずのことが、いまは少し違って見えています。", "捨てたら軽くなると分かっているものが、部屋か心のどこかにあります。"]};
+const NOTE_V2 = {"太陽": "強い光は、近くの人を眩ませることがあります。今日のあなたの言葉は、思っているより大きく届きます。", "月": "揺れているのは、定まっていないからではなく、ちゃんと感じているからです。責める必要は、どこにもありません。", "火星": "勢いのある日は、言葉も速くなります。送信の前にひと呼吸──それだけで、今日の勢いは全部プラスに使えます。", "木星": "守られている日ほど、人はひとりで抱えがちです。今日は借りられる手が、いつもより多い日です。", "土星": "積む日に、収穫まで求めなくていいのです。今日の一段は、ちゃんと明日の高さになっています。", "金星": "美しさに敏感な日は、見栄えにも引っ張られやすい日。今日いちばん効くのは、飾らないほうの魅力です。", "水星": "知らせが多い日は、返事が雑になりやすい日でもあります。短くていい、丁寧に──それで十分伝わります。", "地球": "当たり前の一日は、退屈に見えて、いちばん壊れやすい宝物です。今日は「いつも通り」を味わう側に回ってみてください。", "天王星": "変える力が強い日は、変えすぎて疲れることもあります。今日は一箇所だけ、思いきり変えれば十分です。", "海王星": "深く潜れる日は、思い込みの海にも潜りやすい日。ときどき水面に顔を出して、事実をひと口吸ってください。", "冥王星": "変わろうとするとき、前の自分が引き止めに来ます。それは敵ではなく、これまで頑張ってきた証拠です。", "ハレー彗星": "巡り会うものは、昔のままでは戻ってきません。変わった分も含めて、再会です。", "アンドロメダ銀河": "大きなものを前にすると、自分が小さく見えます。でも、小ささと無力は別のものです。", "天の川銀河": "流れに乗ることと、流されることは紙一重。今日どこへ向かっているかだけ、一度たしかめてください。", "大マゼラン雲": "近くにいてくれる人ほど、扱いが雑になりがちです。今日は距離の近さに、甘えすぎないで。", "小マゼラン雲": "大きな成果を追う日ではありません。小さくきらめくもののほうが、今日は本物です。", "オリオン大星雲": "未熟なものを出すのは勇気が要ります。でも生まれたてには、完成品にない力があります。", "馬頭星雲": "輪郭が見えた瞬間がいちばん動きたくなりますが、影が形になるには時間が要ります。見えたことを、まず喜んでください。", "蟹星雲": "過去の破片は、否定するためではなく、光るために残っています。壊れた場所から出た光も、あります。", "イオ": "燃える力が強い日は、燃やしすぎに注意。夜のぶんの薪を、少しだけ残しておいてください。", "エウロパ": "見えないところで進んでいるものは、見えないだけで止まっていません。氷の下にも、海があります。", "ガニメデ": "頼れる存在がいる日は、任せきりにもなりやすい日。舵だけは、自分の手に。", "カリスト": "刻まれた傷は、縛るためではなく、覚えているためにあります。今日は記録として読んでください。", "タイタン": "見えないことは、悪い兆しではありません。霧の中は、ただ霧の中です。晴れるまで、歩幅を小さく。", "エンケラドゥス": "命は、氷を割って噴き出します。簡単な道の先ではなく、固いところの下に、今日の水脈があります。", "環状星雲": "ひとつ閉じた輪の中にいるときは、次を急がなくていい。閉じ切ることも、仕事のうちです。", "創造の柱": "育っている最中のものに、完成を求めないでください。柱の中では、まだ星が生まれています。", "ばら星雲": "咲きつづけるものは、見ているだけでも美しい。でも今日は、一歩近づいて香りを確かめる日です。", "干潟星雲": "遠くを眺めるのは休息か、逃避か──今日は自分で区別がつく日です。眺めたら、ちゃんと戻ってきてください。", "三裂星雲": "分かれているものを、無理にひとつにしなくていい。分かれたまま光る形も、ちゃんとあります。", "北アメリカ星雲": "形が見えた途端に固めたくなりますが、今日はまだ下書きのままで。輪郭は、逃げません。", "ペリカン星雲": "翼を広げるほど、一枚一枚は薄くなります。今日は届く範囲を、少しだけ絞って。", "亜鈴状星雲": "両方持つのは、中途半端ではありません。両極を支えるには真ん中に強い芯が要ります。それが、あなたです。", "プレセペ星団": "群れの温かさと、流されることは別物です。輪の中でも、自分の光は自分の色で。", "ヘルクレス球状星団": "束になる日ほど、ひとりの時間が効きます。今日どこかで15分、自分だけの席を。", "オメガ星団": "大きな声は、大きいだけです。正しいとは限りません。自分の音量は、自分で決めてください。", "ペルセウス二重星団": "対で輝くには、相手任せでは足りません。あなたが光るから、対になれるのです。", "ソンブレロ銀河": "品よく在ろうとするほど、肩に力が入ります。気品の芯は、リラックスです。", "子持ち銀河": "寄り添う力が強い日は、抱え込みすぎにも注意。見守るのも、立派な寄り添いです。", "三角座銀河": "三つのどれかを切りたくなったら、思い出してください。三つ揃って、はじめて回っています。", "銀河系中心": "手放したあとの静けさを、喪失と読まないでください。終わったのではなく、中心が静かなだけです。", "M87ブラックホール": "向き合うことと、今すぐ解決することは別です。今日は「見た」だけで、十分に前進です。", "SN1987A": "強い印象は、事実より大きく残ります。振り回されなくていい。見届けたこと自体に、価値があります。"};
+const GUIDE45 = {"T1": {"overall": "週の前半に一度だけ、自分から輪の真ん中に立ってください。口火でも幹事でも、小さくていい。それが今週の点火スイッチです。", "love": "こちらから先に、明るさをひとつ。連絡でも笑顔でもいい。先に灯した側が、この週の主役です。", "money": "「気分が上がるか」で選ぶ買い物を、ひとつだけ。金額ではなく、選び方の練習です。", "work": "後回しの企画をひとつ、今週中に机の上へ。完成でなく、着火までで十分です。", "health": "朝の光を浴びる日を、今週3日つくってください。窓際1分で数えてOKです。"}, "T2": {"overall": "決めきれない件は、「今週は決めない」と決めてください。それだけで、肩がひとつ軽くなります。", "love": "返事を急かさず、今週は相手の言葉の余白を読む側に。沈黙は、拒絶ではありません。", "money": "大きな決断は週明けへ。今週は情報を受け取るだけでいい週です。", "work": "詰め切れない案件は「仮」と書いて置いてください。仮と書いた瞬間、前に進みはじめます。", "health": "湯船に2回、ゆっくり浸かってください。流れる週は、水で整えるのがいちばん効きます。"}, "T3": {"overall": "いつもと違う選択をひとつだけ──帰り道でも、昼食でも。今週の発見は、その角にあります。", "love": "温めている気持ちがあるなら、今週のうちに一言だけ外へ。全部でなくていい、一言で。", "money": "迷っていた小さな一手を、今週打ってください。ただし金額は「失っても笑える額」まで。", "work": "例の案件に、週の前半のうちに5分だけ着手を。5分で、流れが変わります。", "health": "体を動かす予定をひとつ、カレンダーに書き込んでください。書いた予定は、半分実行済みです。"}, "T4": {"overall": "来た誘いには、今週は一度乗ってみてください。巡ってきたものには、たいてい理由があります。", "love": "支えてくれた人に「ありがとう」を言葉で。今週中に一回、声か文字で。", "money": "お金の相談ごとは、ひとりで結論を出さないこと。信頼できる人に、一度だけ話してください。", "work": "今週ひとつだけ、人に任せてください。任せた仕事は、縁の種になります。", "health": "誰かと一緒のごはんを、今週一度。守られる感覚は、食卓から来るのがいちばん早いのです。"}, "T5": {"overall": "毎日つづけていることを、今週は一日だけ「少し丁寧に」。それが今週の贅沢です。", "love": "新しさより、いまある縁に一手間を。いつもの相手に、いつもより一行長い言葉を。", "money": "家計をひとつだけ見直してください。サブスクでも固定費でも、一件で十分です。", "work": "今週は新規より整理の週。フォルダでも、タスクの棚卸しでも、ひとつだけ。", "health": "寝る時間を、今週は15分だけ前倒しに。積み重ねの週は、眠りから積んでください。"}, "T6": {"overall": "頭の中の「あれ言わなきゃ」を、週の前半に出し切ってください。連絡3件──それが今週の道しるべです。", "love": "気になる人には、軽い一往復を。長文はいりません。往復させることが目的です。", "money": "比較検討中のものは、今週中に表にして並べてください。並べた瞬間、答えはほぼ出ています。", "work": "進捗の共有をひとつ、聞かれる前に出してください。今週の信頼は、そこで積まれます。", "health": "寝る前30分、画面を置いてください。頭がよく回る週ほど、空回りさせないことです。"}, "T7": {"overall": "大切な人のために、今週30分だけ時間を確保してください。予定に入れれば、それはもう約束です。", "love": "会いたい人に、会いたいと伝えてください。日程まで決められたら満点です。", "money": "今週のお金は、誰かのために少しだけ。小さな贈り物が、いちばん巡りのいい使い方です。", "work": "誰かの相談に、今週一度だけ本気で乗ってください。育てた分は、必ず戻ってきます。", "health": "好きなものに触れる時間を、予定として確保を。花一輪でも、音楽一枚でも。感性の栄養は前借りできません。"}, "T8": {"overall": "迷っている集まりがあるなら、顔を出してください。滞在30分でいい。行った事実が、今週を変えます。", "love": "二人きりより、みんなの中で。今週の距離は、輪の中でのほうが自然に縮まります。", "money": "割り勘でも、シェアでも、「一緒に使う」お金を今週ひとつ。共有の出費は、縁の接着剤です。", "work": "今週は一度、チームに明確に助けを求めてください。「手伝って」は弱さではなく、結束の合図です。", "health": "誰かと一緒に、体を動かすか食べるかを一度。ひとりで整う週ではありません。"}, "T9": {"overall": "終わらせたいことをひとつ選んで、「終わりの日付」を決めてください。実行はまだ先でいい。日付だけ。", "love": "言えていない本音を、まず紙に書いてください。渡さなくていい。書けた時点で、半歩進んでいます。", "money": "使っていないもの・サブスクをひとつ、解約か手放しを。空いた場所に、新しい巡りが入ります。", "work": "古い役割をひとつ、今週限りで下ろすと決めてください。引き継ぎメモを書き始めたら、それが儀式です。", "health": "寝る前に、今日の気がかりをひとつだけ紙に書いて、置いて寝てください。頭から紙へ。それが今週の毒出しです。"}};
+function pickEmpathy(themeKey){ const a = DAILY_EMPATHY[themeKey] || DAILY_EMPATHY['T1']; return a[Math.floor(Math.random()*a.length)]; }
+
 const WK_CATS = [
   {key:'overall', label:'全体運'},
   {key:'love',    label:'恋愛運'},
@@ -1213,7 +1240,10 @@ function renderWeekly(m, d){
     const star = five[i];
     const theme = WK_THEME_OF[star.n] || 'T1';
     const tpl = (WK_READINGS[theme] && WK_READINGS[theme][cat.key]) || '';
-    const reading = wkFillReading(tpl, star.w);
+    const wkEmp = pickEmpathy(theme);
+    const wkGuide = (GUIDE45[theme] && GUIDE45[theme][cat.key]) || '';
+    const reading = wkEsc(wkEmp) + '<span class="fx-bridge">──今週の一枚。</span>' + wkFillReading(tpl, star.w) +
+      (wkGuide ? '<br><span class="wk-guide">今週の道しるべ── ' + wkEsc(wkGuide) + '</span>' : '');
 
     const slot = document.createElement('div');
     slot.className = 'wk-slot wk-a-' + cat.key + (cat.key === 'overall' ? ' center' : '');

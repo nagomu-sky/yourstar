@@ -239,6 +239,9 @@ button.go:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(179, 
 .wk-reading-rule { width: 36px; height: 1px; margin: 0 0 0.9rem; background: linear-gradient(90deg, var(--accent2), transparent); }
 .wk-reading-body { font-size: 0.95rem; line-height: 2.05; letter-spacing: 0.03em; color: var(--text); }
 .wk-reading-body .wk-em { color: var(--accent2); font-weight: 600; }
+.fx-bridge { display: block; margin: 0.15em 0 0.1em; }
+.fortune-empathy { max-width: 34em; margin: 0.8rem auto 1.1rem; text-align: center; font-size: 0.88rem; line-height: 1.8; color: var(--accent); opacity: 0.95; }
+.wk-guide { display: block; margin-top: 0.5rem; color: var(--accent2); font-weight: 600; }
 .wk-footnote { margin-top: 1.4rem; text-align: center; color: var(--dim); font-size: 0.68rem; line-height: 1.8; opacity: 0.8; }
 @media (max-width: 560px) { .wk-card { width: 66px; } .wk-slot.center .wk-card { width: 104px; } .wk-grid { gap: 12px 4px; } }
 
@@ -939,13 +942,24 @@ function drawFortune(){
   const isSameDay = (stored.date === todayKey);
   let count = isSameDay ? (stored.count || 0) : 0;
   let lastIdxs = (isSameDay && Array.isArray(stored.idxs)) ? stored.idxs : null;
-  function pickDistinct(n){
+  // Remember which cards already came up today so re-draws don't repeat them
+  let seen = (isSameDay && Array.isArray(stored.seen)) ? stored.seen.slice() : [];
+  function pickDistinct(n, exclude){
+    exclude = exclude || [];
+    let pool = [];
+    for (let i = 0; i < FORTUNE_43.length; i++) {
+      if (exclude.indexOf(i) === -1) pool.push(i);
+    }
+    // If exclusion leaves too few, drop the restriction (safety net)
+    if (pool.length < n) {
+      pool = [];
+      for (let i = 0; i < FORTUNE_43.length; i++) pool.push(i);
+    }
     const out = [];
-    let guard = 0;
-    while (out.length < n && guard < 500) {
-      const r = Math.floor(Math.random() * FORTUNE_43.length);
-      if (out.indexOf(r) === -1) out.push(r);
-      guard++;
+    while (out.length < n && pool.length > 0) {
+      const r = Math.floor(Math.random() * pool.length);
+      out.push(pool[r]);
+      pool.splice(r, 1);
     }
     return out;
   }
@@ -953,15 +967,17 @@ function drawFortune(){
   if (count >= 3) {
     isReplay = true;
     if (!lastIdxs || lastIdxs.length < people.length) {
-      idxs = pickDistinct(people.length);
-      lsSet('fortune_today2', JSON.stringify({date: todayKey, count: count, idxs: idxs}));
+      idxs = pickDistinct(people.length, seen);
+      seen = seen.concat(idxs);
+      lsSet('fortune_today2', JSON.stringify({date: todayKey, count: count, idxs: idxs, seen: seen}));
     } else {
       idxs = lastIdxs;
     }
   } else {
-    idxs = pickDistinct(people.length);
+    idxs = pickDistinct(people.length, seen);
     count++;
-    lsSet('fortune_today2', JSON.stringify({date: todayKey, count: count, idxs: idxs}));
+    seen = seen.concat(idxs);
+    lsSet('fortune_today2', JSON.stringify({date: todayKey, count: count, idxs: idxs, seen: seen}));
   }
   const today = new Date();
   const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -987,16 +1003,19 @@ function drawFortune(){
     people.forEach(function(p, i){
       const card = FORTUNE_43[idxs[i]];
       if (multi) html += '<div style="text-align:center;color:var(--accent2);letter-spacing:0.15em;font-size:0.9rem;margin:1.4rem 0 0.6rem;opacity:0.9;">― ' + p.label + ' (' + p.m + '/' + p.d + ') today ―</div>';
+      const themeKey = (typeof WK_THEME_OF !== 'undefined' && WK_THEME_OF[card.n]) || 'T1';
+      const empathy = pickEmpathy(themeKey) + '<span class="fx-bridge">— today\'s card landed exactly there.</span>';
       html +=
+        '<div class="fortune-empathy">' + empathy + '</div>' +
         '<div class="card-stage">' +
           '<img class="card-img" src="' + (CARD_SVG[card.n] || '') + '" alt="' + card.n + ' / ' + card.w + '">' +
           '<h2 class="fortune-name">' + card.n + '</h2>' +
           '<div class="fortune-word">“' + card.w + '”</div>' +
         '</div>' +
         '<div class="fortune-body">' + card.body + '</div>' +
-        '<div class="fortune-note">' + card.note + '</div>' +
+        '<div class="fortune-note">One thing to keep in the back of your mind — ' + (NOTE_V2[card.n] || card.note) + '</div>' +
         '<div class="fortune-action">' +
-          '<div class="fortune-action-label">Lucky Action</div>' +
+          '<div class="fortune-action-label">Today\'s Signpost</div>' +
           '<div class="fortune-action-text">' + card.act + '</div>' +
         '</div>';
       if (multi && i < people.length - 1) html += '<div class="divider-line" style="margin:1.8rem 0;"></div>';
@@ -1011,6 +1030,13 @@ function closeFortune(){ document.getElementById('fortune-bg').classList.remove(
    Result is deterministic: birthday × ISO week. Same five cards
    all week; a new week begins on Monday.
    ============================================================ */
+
+/* ===== Fortune text v2 (2026/7/12): empathy 27 / shadow notes 43 / weekly signposts 45 ===== */
+const DAILY_EMPATHY = {"T1": ["Lately, you keep ending up at the center of things. You've noticed, haven't you.", "You're being watched more than you think — and not in a bad way.", "You say \"who, me?\" — and still manage to light up the room. That's you."], "T2": ["There's something you wish were black or white, and it stubbornly stays gray.", "Your moods have been swinging a little wider these past few days. That isn't a flaw.", "Right now, your intuition is running sharper than your logic."], "T3": ["Something you've been keeping warm inside is ready to come out.", "You told someone recently about \"that thing you're going to do.\" That was the sign you mean it.", "You have energy to spare — it's just still looking for somewhere to land."], "T4": ["You can think of a recent moment when someone quietly helped you.", "The load you carry alone is more visible to others than you think.", "An old connection crossed your mind the other day, didn't it."], "T5": ["You've been quietly wondering whether the thing you keep doing is worth it.", "It isn't flashy, but there is solid ground under your feet — you built it.", "\"Not enough yet\" is becoming your catchphrase. You've built plenty already."], "T6": ["There's a reply you still owe someone, sitting in the corner of your mind.", "The more you research, the harder one particular decision is getting. You know the one.", "Something that would untangle itself if said out loud is still circling in your head."], "T7": ["Someone you care about just came to mind, didn't they.", "You wondered if the time you gave someone was wasted. It was not.", "Something you've been tending — a person, a plant, a project — is quietly growing."], "T8": ["The balance between time alone and time with people has tilted a little.", "There's a gathering you've been debating whether to attend.", "\"Do I even fit in here?\" — you're not the only one in the room thinking it."], "T9": ["There's something you want to end and haven't been able to.", "Something that would have delighted the old you looks different now.", "Somewhere — in your room or in your heart — is a thing you know you'd be lighter without."]};
+const NOTE_V2 = {"Sun": "A strong light can dazzle the people standing closest. Today, your words carry further than you think.", "Moon": "You're wavering not because you're lost, but because you're actually feeling things. There is nothing to scold yourself for.", "Mars": "On fast days, words speed up too. One breath before you hit send — and all of today's momentum works in your favor.", "Jupiter": "On protected days, people tend to carry everything alone. Today there are more hands on offer than usual. Borrow one.", "Saturn": "A day for stacking doesn't owe you a harvest. Today's one layer is already tomorrow's height.", "Venus": "On days tuned to beauty, appearances pull hard. What works best today is the unpolished kind of charm.", "Mercury": "On busy-inbox days, replies turn careless. Short is fine — just make it kind. That's plenty.", "Earth": "An ordinary day looks boring, and it's the most breakable treasure you own. Today, take the side that savors 'same as always.'", "Uranus": "When your power to change things runs high, you can change too much and tire out. One bold change today is enough.", "Neptune": "On deep-diving days, you can also dive into your own assumptions. Surface now and then, and take one breath of plain fact.", "Pluto": "When you try to change, your former self comes to hold you back. That's not an enemy — it's proof of how hard you've worked until now.", "Halley's Comet": "What comes around again never comes back unchanged. The changes are part of the reunion.", "Andromeda Galaxy": "Facing something vast makes you feel small. But small and powerless are two different things.", "The Milky Way": "Riding the current and being swept by it are a hair apart. Just check, once, where today is carrying you.", "Large Magellanic Cloud": "The closer someone stays, the rougher we tend to treat them. Don't lean too hard on the shortness of the distance today.", "Small Magellanic Cloud": "Today is not for chasing big wins. The small glittering things are the real ones today.", "Orion Nebula": "It takes courage to show something unfinished. But newborn things have a power that finished ones have lost.", "Horsehead Nebula": "The moment a shape appears is when you most want to move. Shadows need time to become forms. First, be glad you saw it.", "Crab Nebula": "Fragments of the past remain not to be denied, but to shine. Some light only comes from broken places.", "Io": "On high-burn days, watch the fuel. Save a little firewood for tonight.", "Europa": "What moves out of sight isn't stopped — just out of sight. There is an ocean under the ice.", "Ganymede": "On days when someone reliable is near, it's easy to hand over everything. Keep the helm, at least, in your own hands.", "Callisto": "Scars are carved not to bind you but to remember. Read them today as records, not chains.", "Titan": "Not seeing isn't a bad omen. Inside the fog is just inside the fog. Small steps until it lifts.", "Enceladus": "Life bursts up through cracked ice. Today's spring isn't at the end of the easy path — it's under the hard ground.", "Ring Nebula": "When one ring has closed, don't rush to the next. Closing something fully is work, too.", "Pillars of Creation": "Don't demand completion from what is still growing. Inside the pillars, stars are still being born.", "Rosette Nebula": "What keeps blooming is beautiful even from afar. But today, step one pace closer and check the scent.", "Lagoon Nebula": "Gazing into the distance — rest, or escape? Today you can tell the difference yourself. Gaze, then come back.", "Trifid Nebula": "What's divided doesn't have to be forced into one. Some shapes shine precisely because they're divided.", "North America Nebula": "The instant a shape appears, you want to set it in stone. Keep it a draft today. The outline won't run away.", "Pelican Nebula": "The wider the wings spread, the thinner each feather gets. Narrow your reach a little today.", "Dumbbell Nebula": "Holding both isn't being half-hearted. Holding two poles takes a strong core in the middle. That core is you.", "Beehive Cluster": "The warmth of the crowd and being swept along are different things. Even inside the circle, keep your light your own color.", "Hercules Globular Cluster": "The more tightly bundled the day, the more fifteen minutes alone will do. Find one seat that's only yours.", "Omega Centauri": "A loud voice is only loud. It isn't automatically right. You set your own volume.", "Perseus Double Cluster": "To shine as a pair, waiting on the other isn't enough. You shine — that's what makes it a pair.", "Sombrero Galaxy": "The harder you try to be graceful, the stiffer your shoulders get. The core of elegance is being relaxed.", "Whirlpool Galaxy": "On days your caring runs strong, watch for holding too tightly. Watching over someone is also a way of staying close.", "Triangulum Galaxy": "When you want to cut one of the three away, remember: it takes all three to keep turning.", "The Galactic Center": "Don't read the quiet after letting go as loss. Nothing ended — the center is simply calm.", "M87 Black Hole": "Facing something and solving it today are two different things. Today, having looked is already progress.", "SN 1987A": "Strong impressions loom larger than facts. You don't have to be swept up. Having witnessed it has a value of its own."};
+const GUIDE45 = {"T1": {"overall": "Early this week, step into the center of the circle once — open the meeting, organize the gathering. Small is fine. That's this week's ignition switch.", "love": "Light something first — a message, a smile, anything. Whoever lights first is the lead this week.", "money": "Make one purchase chosen purely by 'does this lift me?' It's practice in how you choose, not how much you spend.", "work": "Put one shelved idea back on the desk this week. Ignition is enough; completion can wait.", "health": "Give yourself three mornings of sunlight this week. One minute by the window counts."}, "T2": {"overall": "For the thing you can't decide: decide not to decide this week. Feel one shoulder come down.", "love": "Don't rush their reply. This week, read the space around their words. Silence is not rejection.", "money": "Push any big decision to next week. This week, just let the information arrive.", "work": "Mark unfinished plans as 'draft' and set them down. The word 'draft' alone gets things moving.", "health": "Two slow, proper baths this week. A flowing week is best settled with water."}, "T3": {"overall": "Change exactly one choice — the route home, the lunch order. This week's discovery is around that corner.", "love": "If you've been keeping a feeling warm, let one word of it out this week. Not all of it. One word.", "money": "Play the small move you've been debating. Cap it at an amount you could lose and still laugh.", "work": "Give that project five minutes early in the week — Monday or Tuesday. Five minutes changes the current.", "health": "Write one bit of exercise into your calendar. A written plan is half done."}, "T4": {"overall": "Say yes to one invitation this week. Things that circle back to you usually have a reason.", "love": "Thank the person who's been holding you up — once this week, out loud or in writing.", "money": "Don't settle money questions alone. Talk it through once with someone you trust.", "work": "Hand one task to someone else this week. Delegated work is how bonds take root.", "health": "Share one meal with someone this week. The feeling of being held starts fastest at a table."}, "T5": {"overall": "Take one daily routine and, for one day, do it a little more carefully. That's this week's luxury.", "love": "Tend the bond you already have. Write your usual person one line more than usual.", "money": "Review one item in the budget — a subscription, a fixed cost. One is enough.", "work": "This week favors sorting over starting. Tidy one folder or one task list.", "health": "Move bedtime fifteen minutes earlier. In a stacking week, stack sleep first."}, "T6": {"overall": "Empty out the 'I need to tell them' list early in the week. Three messages — that's the signpost.", "love": "One light exchange with the person on your mind. No long letters. The back-and-forth is the point.", "money": "Put the options you've been comparing into one table this week. The moment they line up, the answer is mostly there.", "work": "Share one progress update before you're asked. That's where trust gets built this week.", "health": "Thirty minutes before bed, put the screen down. In a fast-thinking week, don't let the engine race in neutral."}, "T7": {"overall": "Block thirty minutes this week for someone who matters. Once it's on the calendar, it's a promise.", "love": "Tell the person you want to see that you want to see them. Full marks if you set the date.", "money": "Spend a little on someone else this week. A small gift is the best-circulating money there is.", "work": "Take one person's problem seriously this week — just once. What you grow comes back.", "health": "Reserve time to touch what you love — one flower, one album. Nourishment for the senses can't be borrowed later."}, "T8": {"overall": "If you're debating that gathering — go. Thirty minutes is enough. The fact of having gone changes the week.", "love": "Less one-on-one, more in the circle. This week, distance closes more naturally in company.", "money": "Spend once 'together' this week — split, shared, pooled. Shared expenses are the glue of connection.", "work": "Ask your team for help, clearly, once this week. 'Give me a hand' isn't weakness — it's the signal that binds.", "health": "Move or eat with someone, once. This is not a week that settles in solitude."}, "T9": {"overall": "Pick one thing you want to end, and set its end date. Acting can wait. Just the date.", "love": "Write the unsaid thing on paper first. You don't have to hand it over. Written down is already half a step.", "money": "Release one unused thing or subscription. New circulation moves into the space it leaves.", "work": "Choose one old role to set down after this week. Starting the handover notes is the ritual itself.", "health": "Before sleep, write down one worry and leave it on the paper. From head to page — that's this week's detox."}};
+function pickEmpathy(themeKey){ const a = DAILY_EMPATHY[themeKey] || DAILY_EMPATHY['T1']; return a[Math.floor(Math.random()*a.length)]; }
+
 const WK_CATS = [
   {key:'overall', label:'Overall'},
   {key:'love',    label:'Love'},
@@ -1239,7 +1265,10 @@ function renderWeekly(m, d){
     const star = five[i];
     const theme = WK_THEME_OF[star.n] || 'T1';
     const tpl = (WK_READINGS[theme] && WK_READINGS[theme][cat.key]) || '';
-    const reading = wkFillReading(tpl, star.w);
+    const wkEmp = pickEmpathy(theme);
+    const wkGuide = (GUIDE45[theme] && GUIDE45[theme][cat.key]) || '';
+    const reading = wkEsc(wkEmp) + '<span class="fx-bridge">— this week\'s card landed exactly there.</span>' + wkFillReading(tpl, star.w) +
+      (wkGuide ? '<br><span class="wk-guide">This week\'s signpost — ' + wkEsc(wkGuide) + '</span>' : '');
 
     const slot = document.createElement('div');
     slot.className = 'wk-slot wk-a-' + cat.key + (cat.key === 'overall' ? ' center' : '');
